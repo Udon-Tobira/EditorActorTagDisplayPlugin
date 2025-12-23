@@ -39,11 +39,11 @@ public:
     auto GetSectionName() const -> FName override { return {"EditorActorTagDisplay"}; }
 
 #if WITH_EDITOR
-    void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+    void PostEditChangeProperty(FPropertyChangedEvent &PropertyChangedEvent) override;
 #endif
 
     // 設定値へのアクセサ
-    auto GetClassConfigs() const -> const TArray<FActorClassTagDisplayConfig>& { return ClassConfigs; }
+    auto GetClassConfigs() const -> const TArray<FActorClassTagDisplayConfig> & { return ClassConfigs; }
     auto IsTagDisplayEnabled() const -> bool { return bIsTagDisplayEnabled; }
     void SetTagDisplayEnabled(bool bEnabled);
     auto GetTextSize() const -> float { return TextSize; }
@@ -52,15 +52,15 @@ public:
     void SetOutlineWidth(float InOutlineWidth);
 
     // 静的アクセサ
-    static auto Get() -> UEditorActorTagDisplaySettings*;
+    static auto Get() -> UEditorActorTagDisplaySettings *;
 
     // デリゲート宣言
     DECLARE_MULTICAST_DELEGATE_OneParam(FOnTextSizeChanged, float);
     DECLARE_MULTICAST_DELEGATE_OneParam(FOnOutlineWidthChanged, float);
 
     // デリゲートアクセサ（モジュール用）
-    auto GetOnTextSizeChangedDelegate() -> FOnTextSizeChanged& { return OnTextSizeChanged; }
-    auto GetOnOutlineWidthChangedDelegate() -> FOnOutlineWidthChanged& { return OnOutlineWidthChanged; }
+    auto GetOnTextSizeChangedDelegate() -> FOnTextSizeChanged & { return OnTextSizeChanged; }
+    auto GetOnOutlineWidthChangedDelegate() -> FOnOutlineWidthChanged & { return OnOutlineWidthChanged; }
 
 private:
     // デリゲートインスタンス

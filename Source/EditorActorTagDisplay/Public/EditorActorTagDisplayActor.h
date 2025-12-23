@@ -12,17 +12,17 @@
 UCLASS(Transient, NotPlaceable)
 class EDITORACTORTAGDISPLAY_API AEditorActorTagDisplayActor : public AActor
 {
-	// NOLINTNEXTLINE
-	GENERATED_BODY()
+    // NOLINTNEXTLINE
+    GENERATED_BODY()
 
 public:
-	AEditorActorTagDisplayActor();
+    AEditorActorTagDisplayActor();
 
-	/** Gets the text render component for displaying tags. */
-	auto GetTextRenderComponent() const -> UTextRenderComponent* { return TextRenderComponent; }
+    /** Gets the text render component for displaying tags. */
+    auto GetTextRenderComponent() const -> UTextRenderComponent * { return TextRenderComponent; }
 
 private:
-	/** Text render component for displaying actor tags. */
-	UPROPERTY()
-	TObjectPtr<UTextRenderComponent> TextRenderComponent;
+    /** Text render component for displaying actor tags. */
+    UPROPERTY()
+    TObjectPtr<UTextRenderComponent> TextRenderComponent;
 };

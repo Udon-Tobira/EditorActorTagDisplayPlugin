@@ -22,10 +22,10 @@ void UEditorActorTagDisplaySettings::SetTextSize(float InTextSize)
     {
         return; // 値が変わっていない場合は何もしない
     }
-    
+
     TextSize = InTextSize;
     SaveConfig();
-    
+
     // デリゲートを呼び出してTextActorを更新
     OnTextSizeChanged.Broadcast(TextSize);
 }
@@ -36,28 +36,28 @@ void UEditorActorTagDisplaySettings::SetOutlineWidth(float InOutlineWidth)
     {
         return; // 値が変わっていない場合は何もしない
     }
-    
+
     OutlineWidth = InOutlineWidth;
     SaveConfig();
-    
+
     // デリゲートを呼び出してTextActorを更新
     OnOutlineWidthChanged.Broadcast(OutlineWidth);
 }
 
-auto UEditorActorTagDisplaySettings::Get() -> UEditorActorTagDisplaySettings*
+auto UEditorActorTagDisplaySettings::Get() -> UEditorActorTagDisplaySettings *
 {
     return GetMutableDefault<UEditorActorTagDisplaySettings>();
 }
 
 #if WITH_EDITOR
-void UEditorActorTagDisplaySettings::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
+void UEditorActorTagDisplaySettings::PostEditChangeProperty(FPropertyChangedEvent &PropertyChangedEvent)
 {
     Super::PostEditChangeProperty(PropertyChangedEvent);
-    
+
     if (PropertyChangedEvent.Property != nullptr)
     {
         const FName PropertyName = PropertyChangedEvent.Property->GetFName();
-        
+
         // TextSizeプロパティが変更された場合、デリゲートを呼び出す
         if (PropertyName == GET_MEMBER_NAME_CHECKED(UEditorActorTagDisplaySettings, TextSize))
         {
