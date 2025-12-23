@@ -10,13 +10,13 @@ UEditorActorTagDisplaySettings::UEditorActorTagDisplaySettings()
     SectionName = TEXT("Actor Tag Display");
 }
 
-void UEditorActorTagDisplaySettings::SetTagDisplayEnabled(bool bEnabled)
+auto UEditorActorTagDisplaySettings::SetTagDisplayEnabled(bool bEnabled) -> void
 {
     bIsTagDisplayEnabled = bEnabled;
     SaveConfig();
 }
 
-void UEditorActorTagDisplaySettings::SetTextSize(float InTextSize)
+auto UEditorActorTagDisplaySettings::SetTextSize(float InTextSize) -> void
 {
     if (FMath::IsNearlyEqual(TextSize, InTextSize, KINDA_SMALL_NUMBER))
     {
@@ -30,7 +30,7 @@ void UEditorActorTagDisplaySettings::SetTextSize(float InTextSize)
     OnTextSizeChanged.Broadcast(TextSize);
 }
 
-void UEditorActorTagDisplaySettings::SetOutlineWidth(float InOutlineWidth)
+auto UEditorActorTagDisplaySettings::SetOutlineWidth(float InOutlineWidth) -> void
 {
     if (FMath::IsNearlyEqual(OutlineWidth, InOutlineWidth, KINDA_SMALL_NUMBER))
     {
@@ -50,7 +50,7 @@ auto UEditorActorTagDisplaySettings::Get() -> UEditorActorTagDisplaySettings *
 }
 
 #if WITH_EDITOR
-void UEditorActorTagDisplaySettings::PostEditChangeProperty(FPropertyChangedEvent &PropertyChangedEvent)
+auto UEditorActorTagDisplaySettings::PostEditChangeProperty(FPropertyChangedEvent &PropertyChangedEvent) -> void
 {
     Super::PostEditChangeProperty(PropertyChangedEvent);
 

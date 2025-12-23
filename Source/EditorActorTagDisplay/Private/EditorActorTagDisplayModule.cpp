@@ -139,7 +139,8 @@ void FEditorActorTagDisplayModule::ProcessActorIfMatched(AActor *Actor, const UE
     }
 }
 
-void FEditorActorTagDisplayModule::CreateOrUpdateTextActor(AActor *Actor, const FActorClassTagDisplayConfig &Config)
+auto FEditorActorTagDisplayModule::CreateOrUpdateTextActor(AActor *Actor, const FActorClassTagDisplayConfig &Config)
+    -> void
 {
     // NOLINTNEXTLINE
     check(Actor != nullptr);
@@ -206,7 +207,7 @@ auto FEditorActorTagDisplayModule::GetOrCreateTextActor(AActor *Actor) -> AEdito
     return TextActor;
 }
 
-void FEditorActorTagDisplayModule::SetupTextActor(AEditorActorTagDisplayActor *TextActor)
+auto FEditorActorTagDisplayModule::SetupTextActor(AEditorActorTagDisplayActor *TextActor) -> void
 {
     // NOLINTNEXTLINE
     check(TextActor != nullptr);
@@ -328,7 +329,7 @@ void FEditorActorTagDisplayModule::UpdateTextActorRotation(AEditorActorTagDispla
     TextActor->SetActorRotation(LookAtRotation);
 }
 
-void FEditorActorTagDisplayModule::RemoveUnusedTextActors(const TSet<TWeakObjectPtr<AActor>> &ProcessedActors)
+auto FEditorActorTagDisplayModule::RemoveUnusedTextActors(const TSet<TWeakObjectPtr<AActor>> &ProcessedActors) -> void
 {
     TArray<TWeakObjectPtr<AActor>> ToRemove;
 
@@ -406,7 +407,7 @@ void FEditorActorTagDisplayModule::RemoveViewportShowFlagExtension()
     // メニュー拡張の登録解除は自動的に行われる
 }
 
-void FEditorActorTagDisplayModule::SetTextMaterial(UTextRenderComponent *TextComponent)
+auto FEditorActorTagDisplayModule::SetTextMaterial(UTextRenderComponent *TextComponent) -> void
 {
     // NOLINTNEXTLINE
     check(TextComponent != nullptr);
@@ -424,7 +425,8 @@ void FEditorActorTagDisplayModule::SetTextMaterial(UTextRenderComponent *TextCom
     UE_LOG(LogEditorActorTagDisplay, Error, TEXT("Failed to load text material from %s"), TEXT_MATERIAL_PATH);
 }
 
-void FEditorActorTagDisplayModule::ApplyMaterial(UTextRenderComponent *TextComponent, UMaterialInterface *TextMaterial)
+auto FEditorActorTagDisplayModule::ApplyMaterial(UTextRenderComponent *TextComponent, UMaterialInterface *TextMaterial)
+    -> void
 {
     // NOLINTNEXTLINE
     check(TextComponent != nullptr);
