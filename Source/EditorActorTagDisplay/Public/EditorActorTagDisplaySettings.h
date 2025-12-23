@@ -11,7 +11,8 @@ class AActor;
 USTRUCT()
 struct EDITORACTORTAGDISPLAY_API FActorClassTagDisplayConfig
 {
-    GENERATED_BODY() // NOLINT
+    // NOLINTNEXTLINE
+    GENERATED_BODY()
 
     UPROPERTY(EditAnywhere, Category = "Actor Class Tag Display")
     TSoftClassPtr<AActor> ActorClass;
@@ -26,7 +27,8 @@ struct EDITORACTORTAGDISPLAY_API FActorClassTagDisplayConfig
 UCLASS(config = EditorPerProjectUserSettings, meta = (DisplayName = "Actor Tag Display"))
 class EDITORACTORTAGDISPLAY_API UEditorActorTagDisplaySettings : public UDeveloperSettings
 {
-    GENERATED_BODY() // NOLINT
+    // NOLINTNEXTLINE
+    GENERATED_BODY()
 
 public:
     UEditorActorTagDisplaySettings();

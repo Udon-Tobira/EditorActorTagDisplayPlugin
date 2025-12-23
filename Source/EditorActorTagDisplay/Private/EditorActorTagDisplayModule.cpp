@@ -105,8 +105,10 @@ auto FEditorActorTagDisplayModule::GetEditorWorld() -> UWorld*
 
 void FEditorActorTagDisplayModule::ProcessActorsInWorld(UWorld* World, const UEditorActorTagDisplaySettings* Settings, TSet<TWeakObjectPtr<AActor>>& ProcessedActors)
 {
-    check(World != nullptr); // NOLINT
-    check(Settings != nullptr); // NOLINT
+    // NOLINTNEXTLINE
+    check(World != nullptr);
+    // NOLINTNEXTLINE
+    check(Settings != nullptr);
 
     for (TActorIterator<AActor> It(World); It; ++It)
     {
@@ -122,8 +124,10 @@ void FEditorActorTagDisplayModule::ProcessActorsInWorld(UWorld* World, const UEd
 
 void FEditorActorTagDisplayModule::ProcessActorIfMatched(AActor* Actor, const UEditorActorTagDisplaySettings* Settings, TSet<TWeakObjectPtr<AActor>>& ProcessedActors)
 {
-    check(Actor != nullptr); // NOLINT
-    check(Settings != nullptr); // NOLINT
+    // NOLINTNEXTLINE
+    check(Actor != nullptr);
+    // NOLINTNEXTLINE
+    check(Settings != nullptr);
 
     for (const FActorClassTagDisplayConfig& Config : Settings->GetClassConfigs())
     {
@@ -138,7 +142,8 @@ void FEditorActorTagDisplayModule::ProcessActorIfMatched(AActor* Actor, const UE
 
 void FEditorActorTagDisplayModule::CreateOrUpdateTextActor(AActor* Actor, const FActorClassTagDisplayConfig& Config)
 {
-    check(Actor != nullptr); // NOLINT
+    // NOLINTNEXTLINE
+    check(Actor != nullptr);
 
     FString CombinedTags = FEditorActorTagDisplayModule::CombineActorTags(Actor);
     if (CombinedTags.IsEmpty())
@@ -157,7 +162,8 @@ void FEditorActorTagDisplayModule::CreateOrUpdateTextActor(AActor* Actor, const 
 
 auto FEditorActorTagDisplayModule::CombineActorTags(AActor* Actor) -> FString
 {
-    check(Actor != nullptr); // NOLINT
+    // NOLINTNEXTLINE
+    check(Actor != nullptr);
 
     TArray<FString> TagStrings;
     for (const FName& Tag : Actor->Tags)
@@ -169,7 +175,8 @@ auto FEditorActorTagDisplayModule::CombineActorTags(AActor* Actor) -> FString
 
 auto FEditorActorTagDisplayModule::GetOrCreateTextActor(AActor* Actor) -> AEditorActorTagDisplayActor*
 {
-    check(Actor != nullptr); // NOLINT
+    // NOLINTNEXTLINE
+    check(Actor != nullptr);
 
     TWeakObjectPtr<AEditorActorTagDisplayActor>* ExistingActorPtr = TextActorMap.Find(Actor);
     if (ExistingActorPtr != nullptr && ExistingActorPtr->IsValid())
@@ -202,7 +209,8 @@ auto FEditorActorTagDisplayModule::GetOrCreateTextActor(AActor* Actor) -> AEdito
 
 void FEditorActorTagDisplayModule::SetupTextActor(AEditorActorTagDisplayActor* TextActor)
 {
-    check(TextActor != nullptr); // NOLINT
+    // NOLINTNEXTLINE
+    check(TextActor != nullptr);
 
     UTextRenderComponent* TextComponent = TextActor->GetTextRenderComponent();
     if (TextComponent == nullptr)
@@ -211,7 +219,8 @@ void FEditorActorTagDisplayModule::SetupTextActor(AEditorActorTagDisplayActor* T
     }
 
     const UEditorActorTagDisplaySettings* Settings = UEditorActorTagDisplaySettings::Get();
-    check(Settings != nullptr); // NOLINT
+    // NOLINTNEXTLINE
+    check(Settings != nullptr);
     const float TextSize = Settings->GetTextSize();
 
     TextComponent->SetMobility(EComponentMobility::Movable);
@@ -225,8 +234,10 @@ void FEditorActorTagDisplayModule::SetupTextActor(AEditorActorTagDisplayActor* T
 
 void FEditorActorTagDisplayModule::UpdateTextActorProperties(AEditorActorTagDisplayActor* TextActor, const FString& CombinedTags, const FActorClassTagDisplayConfig& Config, AActor* Actor)
 {
-    check(TextActor != nullptr); // NOLINT
-    check(Actor != nullptr); // NOLINT
+    // NOLINTNEXTLINE
+    check(TextActor != nullptr);
+    // NOLINTNEXTLINE
+    check(Actor != nullptr);
 
     UTextRenderComponent* TextComponent = TextActor->GetTextRenderComponent();
     if (TextComponent == nullptr)
@@ -298,7 +309,8 @@ auto FEditorActorTagDisplayModule::GetCameraLocation() -> FVector
 
 void FEditorActorTagDisplayModule::UpdateTextActorRotation(AEditorActorTagDisplayActor* TextActor, const FVector& TextPosition)
 {
-    check(TextActor != nullptr); // NOLINT
+    // NOLINTNEXTLINE
+    check(TextActor != nullptr);
 
     FVector CameraLocation = FEditorActorTagDisplayModule::GetCameraLocation();
     if (CameraLocation.IsZero())
@@ -391,7 +403,8 @@ void FEditorActorTagDisplayModule::RemoveViewportShowFlagExtension()
 
 void FEditorActorTagDisplayModule::SetTextMaterial(UTextRenderComponent* TextComponent)
 {
-    check(TextComponent != nullptr); // NOLINT
+    // NOLINTNEXTLINE
+    check(TextComponent != nullptr);
 
     const FSoftObjectPath MaterialPath(TEXT_MATERIAL_PATH);
     UMaterialInterface* TextMaterial = Cast<UMaterialInterface>(MaterialPath.TryLoad());
@@ -402,13 +415,16 @@ void FEditorActorTagDisplayModule::SetTextMaterial(UTextRenderComponent* TextCom
         return;
     }
     
-    UE_LOG(LogEditorActorTagDisplay, Error, TEXT("Failed to load text material from %s"), TEXT_MATERIAL_PATH); // NOLINT
+    // NOLINTNEXTLINE
+    UE_LOG(LogEditorActorTagDisplay, Error, TEXT("Failed to load text material from %s"), TEXT_MATERIAL_PATH);
 }
 
 void FEditorActorTagDisplayModule::ApplyMaterial(UTextRenderComponent* TextComponent, UMaterialInterface* TextMaterial)
 {
-    check(TextComponent != nullptr); // NOLINT
-    check(TextMaterial != nullptr); // NOLINT
+    // NOLINTNEXTLINE
+    check(TextComponent != nullptr);
+    // NOLINTNEXTLINE
+    check(TextMaterial != nullptr);
 
     UMaterialInstanceDynamic* DynamicMaterial = UMaterialInstanceDynamic::Create(TextMaterial, TextComponent->GetOwner());
     if (DynamicMaterial == nullptr)
@@ -482,4 +498,5 @@ void FEditorActorTagDisplayModule::UpdateAllTextActorOutlineWidth()
 
 #undef LOCTEXT_NAMESPACE
 
-IMPLEMENT_MODULE(FEditorActorTagDisplayModule, EditorActorTagDisplay) // NOLINT
+// NOLINTNEXTLINE
+IMPLEMENT_MODULE(FEditorActorTagDisplayModule, EditorActorTagDisplay)

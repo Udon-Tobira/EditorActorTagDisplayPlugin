@@ -12,7 +12,8 @@
 UCLASS(Transient, NotPlaceable)
 class EDITORACTORTAGDISPLAY_API AEditorActorTagDisplayActor : public AActor
 {
-	GENERATED_BODY() // NOLINT
+	// NOLINTNEXTLINE
+	GENERATED_BODY()
 
 public:
 	AEditorActorTagDisplayActor();
