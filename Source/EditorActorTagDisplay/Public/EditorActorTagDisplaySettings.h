@@ -39,17 +39,17 @@ public:
     auto GetSectionName() const -> FName override { return {"EditorActorTagDisplay"}; }
 
 #if WITH_EDITOR
-    void PostEditChangeProperty(FPropertyChangedEvent &PropertyChangedEvent) override;
+    auto PostEditChangeProperty(FPropertyChangedEvent &PropertyChangedEvent) -> void override;
 #endif
 
     // 設定値へのアクセサ
     auto GetClassConfigs() const -> const TArray<FActorClassTagDisplayConfig> & { return ClassConfigs; }
     auto IsTagDisplayEnabled() const -> bool { return bIsTagDisplayEnabled; }
-    void SetTagDisplayEnabled(bool bEnabled);
+    auto SetTagDisplayEnabled(bool bEnabled) -> void;
     auto GetTextSize() const -> float { return TextSize; }
-    void SetTextSize(float InTextSize);
+    auto SetTextSize(float InTextSize) -> void;
     auto GetOutlineWidth() const -> float { return OutlineWidth; }
-    void SetOutlineWidth(float InOutlineWidth);
+    auto SetOutlineWidth(float InOutlineWidth) -> void;
 
     // 静的アクセサ
     static auto Get() -> UEditorActorTagDisplaySettings *;

@@ -20,43 +20,43 @@ public:
         TEXT("/EditorActorTagDisplay/Materials/M_TextMaterial.M_TextMaterial");
 
     // IModuleInterface implementation
-    void StartupModule() override;
-    void ShutdownModule() override;
+    auto StartupModule() -> void override;
+    auto ShutdownModule() -> void override;
 
 private:
     // モジュール初期化・終了関連
-    void RegisterDebugDrawDelegate();
-    void UnregisterDebugDrawDelegate();
-    static void AddViewportShowFlagExtension();
-    void RemoveViewportShowFlagExtension();
+    auto RegisterDebugDrawDelegate() -> void;
+    auto UnregisterDebugDrawDelegate() -> void;
+    static auto AddViewportShowFlagExtension() -> void;
+    auto RemoveViewportShowFlagExtension() -> void;
 
     // テキストアクター管理
-    void UpdateTextActors();
-    void CleanupTextActors();
-    void RemoveUnusedTextActors(const TSet<TWeakObjectPtr<AActor>> &ProcessedActors);
+    auto UpdateTextActors() -> void;
+    auto CleanupTextActors() -> void;
+    auto RemoveUnusedTextActors(const TSet<TWeakObjectPtr<AActor>> &ProcessedActors) -> void;
 
     // ワールド・アクター処理
     [[nodiscard]] static auto GetEditorWorld() -> UWorld *;
-    void ProcessActorsInWorld(UWorld *World, const UEditorActorTagDisplaySettings *Settings,
-                              TSet<TWeakObjectPtr<AActor>> &ProcessedActors);
-    void ProcessActorIfMatched(AActor *Actor, const UEditorActorTagDisplaySettings *Settings,
-                               TSet<TWeakObjectPtr<AActor>> &ProcessedActors);
+    auto ProcessActorsInWorld(UWorld *World, const UEditorActorTagDisplaySettings *Settings,
+                              TSet<TWeakObjectPtr<AActor>> &ProcessedActors) -> void;
+    auto ProcessActorIfMatched(AActor *Actor, const UEditorActorTagDisplaySettings *Settings,
+                               TSet<TWeakObjectPtr<AActor>> &ProcessedActors) -> void;
 
     // テキストアクター作成・更新
-    void CreateOrUpdateTextActor(AActor *Actor, const FActorClassTagDisplayConfig &Config);
+    auto CreateOrUpdateTextActor(AActor *Actor, const FActorClassTagDisplayConfig &Config) -> void;
     auto GetOrCreateTextActor(AActor *Actor) -> AEditorActorTagDisplayActor *;
-    static void SetupTextActor(AEditorActorTagDisplayActor *TextActor);
-    static void UpdateTextActorProperties(AEditorActorTagDisplayActor *TextActor, const FString &CombinedTags,
-                                          const FActorClassTagDisplayConfig &Config, AActor *Actor);
-    static void UpdateTextActorRotation(AEditorActorTagDisplayActor *TextActor, const FVector &TextPosition);
+    static auto SetupTextActor(AEditorActorTagDisplayActor *TextActor) -> void;
+    static auto UpdateTextActorProperties(AEditorActorTagDisplayActor *TextActor, const FString &CombinedTags,
+                                          const FActorClassTagDisplayConfig &Config, AActor *Actor) -> void;
+    static auto UpdateTextActorRotation(AEditorActorTagDisplayActor *TextActor, const FVector &TextPosition) -> void;
 
     // マテリアル設定
-    static void SetTextMaterial(UTextRenderComponent *TextComponent);
-    static void ApplyMaterial(UTextRenderComponent *TextComponent, UMaterialInterface *TextMaterial);
+    static auto SetTextMaterial(UTextRenderComponent *TextComponent) -> void;
+    static auto ApplyMaterial(UTextRenderComponent *TextComponent, UMaterialInterface *TextMaterial) -> void;
 
     // フォントサイズ変更処理
-    void UpdateAllTextActorSizes();
-    void UpdateAllTextActorOutlineWidth();
+    auto UpdateAllTextActorSizes() -> void;
+    auto UpdateAllTextActorOutlineWidth() -> void;
 
     // ユーティリティ関数
     static auto CombineActorTags(AActor *Actor) -> FString;

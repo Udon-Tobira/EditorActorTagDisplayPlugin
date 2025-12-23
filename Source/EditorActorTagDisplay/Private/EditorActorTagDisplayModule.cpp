@@ -22,7 +22,7 @@
 
 #define LOCTEXT_NAMESPACE "EditorActorTagDisplay"
 
-void FEditorActorTagDisplayModule::StartupModule()
+auto FEditorActorTagDisplayModule::StartupModule() -> void
 {
     RegisterDebugDrawDelegate();
     FEditorActorTagDisplayModule::AddViewportShowFlagExtension();
@@ -38,7 +38,7 @@ void FEditorActorTagDisplayModule::StartupModule()
     }
 }
 
-void FEditorActorTagDisplayModule::ShutdownModule()
+auto FEditorActorTagDisplayModule::ShutdownModule() -> void
 {
     UnregisterDebugDrawDelegate();
     RemoveViewportShowFlagExtension();
@@ -49,7 +49,7 @@ void FEditorActorTagDisplayModule::ShutdownModule()
     OutlineWidthChangedDelegateHandle.Reset();
 }
 
-void FEditorActorTagDisplayModule::RegisterDebugDrawDelegate()
+auto FEditorActorTagDisplayModule::RegisterDebugDrawDelegate() -> void
 {
     // FTickerを使用してTextRenderComponentを更新
     TickDelegateHandle = FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateLambda(
@@ -60,7 +60,7 @@ void FEditorActorTagDisplayModule::RegisterDebugDrawDelegate()
         }));
 }
 
-void FEditorActorTagDisplayModule::UnregisterDebugDrawDelegate()
+auto FEditorActorTagDisplayModule::UnregisterDebugDrawDelegate() -> void
 {
     if (TickDelegateHandle.IsValid())
     {
@@ -70,7 +70,7 @@ void FEditorActorTagDisplayModule::UnregisterDebugDrawDelegate()
     CleanupTextActors();
 }
 
-void FEditorActorTagDisplayModule::UpdateTextActors()
+auto FEditorActorTagDisplayModule::UpdateTextActors() -> void
 {
     const UEditorActorTagDisplaySettings *Settings = UEditorActorTagDisplaySettings::Get();
     if (Settings == nullptr || !Settings->IsTagDisplayEnabled())
@@ -100,8 +100,8 @@ auto FEditorActorTagDisplayModule::GetEditorWorld() -> UWorld *
     return GEditor->GetEditorWorldContext().World();
 }
 
-void FEditorActorTagDisplayModule::ProcessActorsInWorld(UWorld *World, const UEditorActorTagDisplaySettings *Settings,
-                                                        TSet<TWeakObjectPtr<AActor>> &ProcessedActors)
+auto FEditorActorTagDisplayModule::ProcessActorsInWorld(UWorld *World, const UEditorActorTagDisplaySettings *Settings,
+                                                        TSet<TWeakObjectPtr<AActor>> &ProcessedActors) -> void
 {
     // NOLINTNEXTLINE
     check(World != nullptr);
@@ -120,8 +120,8 @@ void FEditorActorTagDisplayModule::ProcessActorsInWorld(UWorld *World, const UEd
     }
 }
 
-void FEditorActorTagDisplayModule::ProcessActorIfMatched(AActor *Actor, const UEditorActorTagDisplaySettings *Settings,
-                                                         TSet<TWeakObjectPtr<AActor>> &ProcessedActors)
+auto FEditorActorTagDisplayModule::ProcessActorIfMatched(AActor *Actor, const UEditorActorTagDisplaySettings *Settings,
+                                                         TSet<TWeakObjectPtr<AActor>> &ProcessedActors) -> void
 {
     // NOLINTNEXTLINE
     check(Actor != nullptr);
@@ -232,9 +232,10 @@ auto FEditorActorTagDisplayModule::SetupTextActor(AEditorActorTagDisplayActor *T
     FEditorActorTagDisplayModule::SetTextMaterial(TextComponent);
 }
 
-void FEditorActorTagDisplayModule::UpdateTextActorProperties(AEditorActorTagDisplayActor *TextActor,
+auto FEditorActorTagDisplayModule::UpdateTextActorProperties(AEditorActorTagDisplayActor *TextActor,
                                                              const FString &CombinedTags,
                                                              const FActorClassTagDisplayConfig &Config, AActor *Actor)
+    -> void
 {
     // NOLINTNEXTLINE
     check(TextActor != nullptr);
@@ -312,8 +313,8 @@ auto FEditorActorTagDisplayModule::GetCameraLocation() -> FVector
     return FVector::ZeroVector;
 }
 
-void FEditorActorTagDisplayModule::UpdateTextActorRotation(AEditorActorTagDisplayActor *TextActor,
-                                                           const FVector &TextPosition)
+auto FEditorActorTagDisplayModule::UpdateTextActorRotation(AEditorActorTagDisplayActor *TextActor,
+                                                           const FVector &TextPosition) -> void
 {
     // NOLINTNEXTLINE
     check(TextActor != nullptr);
@@ -351,7 +352,7 @@ auto FEditorActorTagDisplayModule::RemoveUnusedTextActors(const TSet<TWeakObject
     }
 }
 
-void FEditorActorTagDisplayModule::CleanupTextActors()
+auto FEditorActorTagDisplayModule::CleanupTextActors() -> void
 {
     for (auto &Pair : TextActorMap)
     {
@@ -363,7 +364,7 @@ void FEditorActorTagDisplayModule::CleanupTextActors()
     TextActorMap.Empty();
 }
 
-void FEditorActorTagDisplayModule::AddViewportShowFlagExtension()
+auto FEditorActorTagDisplayModule::AddViewportShowFlagExtension() -> void
 {
     // メニュー登録を遅延実行
     UToolMenus::RegisterStartupCallback(FSimpleMulticastDelegate::FDelegate::CreateLambda(
@@ -402,7 +403,7 @@ void FEditorActorTagDisplayModule::AddViewportShowFlagExtension()
         }));
 }
 
-void FEditorActorTagDisplayModule::RemoveViewportShowFlagExtension()
+auto FEditorActorTagDisplayModule::RemoveViewportShowFlagExtension() -> void
 {
     // メニュー拡張の登録解除は自動的に行われる
 }
@@ -449,7 +450,7 @@ auto FEditorActorTagDisplayModule::ApplyMaterial(UTextRenderComponent *TextCompo
     TextComponent->SetTextMaterial(DynamicMaterial);
 }
 
-void FEditorActorTagDisplayModule::UpdateAllTextActorSizes()
+auto FEditorActorTagDisplayModule::UpdateAllTextActorSizes() -> void
 {
     const UEditorActorTagDisplaySettings *Settings = UEditorActorTagDisplaySettings::Get();
     if (Settings == nullptr)
@@ -474,7 +475,7 @@ void FEditorActorTagDisplayModule::UpdateAllTextActorSizes()
     }
 }
 
-void FEditorActorTagDisplayModule::UpdateAllTextActorOutlineWidth()
+auto FEditorActorTagDisplayModule::UpdateAllTextActorOutlineWidth() -> void
 {
     const UEditorActorTagDisplaySettings *Settings = UEditorActorTagDisplaySettings::Get();
     if (Settings == nullptr)
