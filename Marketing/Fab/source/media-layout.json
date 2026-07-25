@@ -1,22 +1,80 @@
 {
-  "canvas": {"width": 1920, "height": 1080, "safe_margin": 96},
+  "designSystemVersion": "amo-fab-v2",
+  "canvas": {
+    "width": 1920,
+    "height": 1080,
+    "safeMargin": 96
+  },
   "colors": {
     "background": "#111318",
+    "background2": "#1E232E",
     "text": "#F5F7FA",
     "secondary": "#A6ADB8",
     "accent": "#36C8FF",
+    "accentGreen": "#58E6A8",
     "card": "#161A22",
-    "accent_green": "#58E6A8",
-    "accent_warm": "#FFB454"
+    "cardShadow": "#090B10"
   },
   "fonts": {
-    "title": "C:/Windows/Fonts/segoeuib.ttf",
-    "body": "C:/Windows/Fonts/segoeui.ttf",
-    "code": "C:/Windows/Fonts/consola.ttf"
+    "bold": "C:/Windows/Fonts/segoeuib.ttf",
+    "regular": "C:/Windows/Fonts/segoeui.ttf",
+    "mono": "C:/Windows/Fonts/consola.ttf"
+  },
+  "fontSizes": {
+    "heroTitle": 88,
+    "galleryTitle": 64,
+    "tagline": 30,
+    "proof": 22,
+    "brand": 22,
+    "disclaimer": 18,
+    "beforeAfter": 28,
+    "code": 24
+  },
+  "cards": {
+    "radius": 28,
+    "borderWidth": 2
   },
   "layouts": {
-    "A": {"heading_y": 88, "tagline_y": 148, "content_y": 226, "content_h": 686},
-    "B": {"heading_y": 88, "tagline_y": 148, "content_y": 226, "content_h": 654},
-    "C": {"heading_y": 88, "tagline_y": 148, "content_y": 264, "content_h": 568}
+    "A": {
+      "text": [96, 142, 660, 680],
+      "screenshot": [800, 150, 1024, 780],
+      "proofY": 780
+    },
+    "AToken": {
+      "text": [96, 92, 1728, 120],
+      "screenshot": [96, 310, 1020, 560],
+      "code": [1160, 310, 664, 560],
+      "proofY": 918
+    },
+    "B": {
+      "screenshot": [40, 40, 1840, 940],
+      "text": [120, 176, 820, 620],
+      "proofY": 748,
+      "gradient": [0, 0, 980, 1020]
+    },
+    "C": {
+      "text": [96, 84, 1728, 170],
+      "before": [96, 300, 840, 610],
+      "after": [984, 300, 840, 610],
+      "dividerX": 960
+    }
+  },
+  "sources": {
+    "viewport": {
+      "crop": [32, 110, 2530, 1121]
+    },
+    "scaledViewport": {
+      "crop": [68, 274, 2492, 1362]
+    },
+    "settings": {
+      "crop": [0, 0, 2560, 1440]
+    }
+  },
+  "previews": {
+    "width": 320,
+    "height": 180,
+    "contactColumns": 3,
+    "contactRows": 2,
+    "contactCellHeight": 390
   }
 }

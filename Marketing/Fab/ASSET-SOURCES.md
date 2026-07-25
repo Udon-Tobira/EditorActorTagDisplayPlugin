@@ -1,12 +1,14 @@
 # Asset sources
 
-All feature imagery in the six final assets comes from the temporary UE 5.8 project recorded in `media-manifest.json`.
+All viewport imagery in the six final Fab assets comes from the temporary Unreal Engine 5.8 Level Editor project recorded in `media-manifest.json` and `.verification/fab-media/source-head.txt`.
 
 - Engine: Unreal Engine 5.8 Level Editor.
-- Project: `.verification/fab-media/host/ActorMetadataOverlaySmoke.uproject`.
-- Level: `/Engine/Maps/Templates/OpenWorld` with temporary fixture actors created by `Content/Python/init_unreal.py`.
-- Plugin source: starting repository commit `84f588dadd06f28cd19e5579d90928d603cc6236`.
-- Feature proof: actual Actor Metadata Overlay rendering in the Level Editor viewport, including All Matching Actors, Off, Selected Actors, rule settings, max draw distance, bounds, actor tags, gameplay tags, Data Layers, and direct property tokens.
-- Capture date: 2026-07-23.
+- Template: the Unreal Open World template.
+- Fixture content: basic scene geometry and temporary custom materials/media-only actors used only to make the metadata proof legible; the demonstration scene is not included.
+- Feature proof: actual Actor Metadata Overlay rendering, Project Settings rules, All Matching Actors, Selected Actors, Off, max draw distance, optional bounds, actor tags, Gameplay Tags, Data Layers, state, and direct property tokens.
+- Outer composition: the JSON-defined 1920x1080 Fab design system using Segoe UI/Consolas fonts and the colors in `source/media-layout.json`.
+- Third-party source assets: no Marketplace or Fab source assets and no Megascans assets.
+- Branding: only the `metyatech` wordmark and the required `Demo scene not included.` disclaimer are added.
+- AI-generated imagery: none.
 
-The outer marketing layout uses only the documented Fab design system: 1920x1080 canvas, dark background, safe margin, Windows Segoe UI/Consolas fonts, and the accent/card colors in `source/media-layout.json`. No AI-generated image is used and no Unreal/Epic or other third-party logo is added.
+The raw captures and provenance are preserved in the generated source archive under `.verification/fab-media/artifacts/`. The upload archive contains only the six final JPEGs.

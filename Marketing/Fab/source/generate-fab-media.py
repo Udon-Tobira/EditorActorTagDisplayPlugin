@@ -2,231 +2,403 @@ from __future__ import annotations
 
 import hashlib
 import json
-import textwrap
+from datetime import datetime, timezone
 from pathlib import Path
+from typing import Iterable
 
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageColor, ImageDraw, ImageFont
 
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 FAB_ROOT = REPO_ROOT / "Marketing" / "Fab"
-OUTPUT_ROOT = FAB_ROOT / "media"
-REVIEW_ROOT = FAB_ROOT / "reviews"
+FINAL_ROOT = FAB_ROOT / "final"
+REVIEW_ROOT = FAB_ROOT / "review"
 RAW_ROOT = REPO_ROOT / ".verification" / "fab-media" / "raw"
 LAYOUT_PATH = FAB_ROOT / "source" / "media-layout.json"
-SOURCE_COMMIT = "84f588dadd06f28cd19e5579d90928d603cc6236"
-
-CANVAS = (1920, 1080)
-BG = "#111318"
-TEXT = "#F5F7FA"
-SECONDARY = "#A6ADB8"
-ACCENT = "#36C8FF"
-CARD = "#161A22"
-GREEN = "#58E6A8"
-WARM = "#FFB454"
+SOURCE_HEAD_PATH = REPO_ROOT / ".verification" / "fab-media" / "source-head.txt"
+MAX_JPEG_BYTES = 2_800_000
+MAX_TOTAL_BYTES = 20_000_000
 
 
-def font(path: str, size: int) -> ImageFont.FreeTypeFont:
-    return ImageFont.truetype(path, size=size)
+MEDIA = [
+    {
+        "order": 1,
+        "filename": "01-actor-metadata-overlay-hero.jpg",
+        "role": "thumbnail",
+        "layout": "B",
+        "source": "hero-all.png",
+        "crop": "viewport",
+        "title": "ACTOR METADATA\nOVERLAY",
+        "tagline": "See the data. Stay in the viewport.",
+        "proof": "RULE-BASED EDITOR OVERLAYS",
+    },
+    {
+        "order": 2,
+        "filename": "02-before-after.jpg",
+        "role": "gallery",
+        "layout": "C",
+        "sources": ["before.png", "after.png"],
+        "crops": ["viewport", "viewport"],
+        "title": "METADATA, WITHOUT\nTHE PANEL HUNT",
+        "tagline": "The same level. The context is finally visible.",
+        "proof": "BEFORE/AFTER",
+    },
+    {
+        "order": 3,
+        "filename": "03-rule-settings.jpg",
+        "role": "gallery",
+        "layout": "A",
+        "source": "project-settings.png",
+        "crop": "settings",
+        "title": "RULES THAT MATCH\nYOUR WORKFLOW",
+        "tagline": "Classes, tags, colors, distance and templates.",
+        "proof": "FIRST MATCH WINS",
+    },
+    {
+        "order": 4,
+        "filename": "04-selected-mode.jpg",
+        "role": "gallery",
+        "layout": "B",
+        "source": "selected.png",
+        "crop": "scaledViewport",
+        "title": "FOCUS ON WHAT\nYOU SELECT",
+        "tagline": "Selected Actors mode keeps the viewport quiet.",
+        "proof": "SELECTED / ALL / OFF",
+    },
+    {
+        "order": 5,
+        "filename": "05-distance-and-bounds.jpg",
+        "role": "gallery",
+        "layout": "A",
+        "source": "distance-bounds.png",
+        "crop": "viewport",
+        "title": "SEE WHAT MATTERS.\nHIDE THE REST.",
+        "tagline": "Distance filtering and optional bounds for dense levels.",
+        "proof": "PER-RULE CONTROL",
+    },
+    {
+        "order": 6,
+        "filename": "06-template-tokens.jpg",
+        "role": "gallery",
+        "layout": "AToken",
+        "source": "all-tokens.png",
+        "crop": "scaledViewport",
+        "title": "SHOW THE DATA\nYOU NEED",
+        "tagline": "Labels, tags, layers and safe direct properties.",
+        "proof": "FLEXIBLE TEMPLATES",
+    },
+]
 
 
-TITLE_FONT = font("C:/Windows/Fonts/segoeuib.ttf", 48)
-SUBTITLE_FONT = font("C:/Windows/Fonts/segoeui.ttf", 26)
-BODY_FONT = font("C:/Windows/Fonts/segoeui.ttf", 22)
-SMALL_FONT = font("C:/Windows/Fonts/segoeui.ttf", 18)
-LABEL_FONT = font("C:/Windows/Fonts/segoeuib.ttf", 16)
-CODE_FONT = font("C:/Windows/Fonts/consola.ttf", 22)
-CODE_SMALL_FONT = font("C:/Windows/Fonts/consola.ttf", 18)
+def load_layout() -> dict:
+    if not LAYOUT_PATH.is_file():
+        raise FileNotFoundError(f"Missing layout JSON: {LAYOUT_PATH}")
+    with LAYOUT_PATH.open(encoding="utf-8") as stream:
+        return json.load(stream)
 
 
-def load_raw(name: str) -> Image.Image:
-    path = RAW_ROOT / name
-    if not path.is_file():
-        raise FileNotFoundError(f"Missing real UE capture: {path}")
-    return Image.open(path).convert("RGB")
+LAYOUT = load_layout()
+CANVAS_SIZE = (LAYOUT["canvas"]["width"], LAYOUT["canvas"]["height"])
+COLORS = LAYOUT["colors"]
+FONTS = LAYOUT["fonts"]
+SIZES = LAYOUT["fontSizes"]
+CARD_RADIUS = LAYOUT["cards"]["radius"]
+CARD_BORDER = LAYOUT["cards"]["borderWidth"]
 
 
-def viewport(raw: Image.Image) -> Image.Image:
-    # The source is a 1920x1080 desktop capture. This crop keeps only the
-    # Level Editor viewport; no pixels are drawn into it.
-    return raw.crop((32, 134, 1889, 996))
+def color(name: str) -> str:
+    return COLORS[name]
 
 
-def settings_panel(raw: Image.Image) -> Image.Image:
-    # Project Settings window crop; browser chrome and taskbar are excluded.
-    return raw.crop((333, 178, 1585, 854))
+def font(name: str, size_name: str) -> ImageFont.FreeTypeFont:
+    return ImageFont.truetype(FONTS[name], size=SIZES[size_name])
 
 
-def fit_cover(image: Image.Image, size: tuple[int, int]) -> Image.Image:
-    target_w, target_h = size
-    source_w, source_h = image.size
-    scale = max(target_w / source_w, target_h / source_h)
-    resized = image.resize((round(source_w * scale), round(source_h * scale)), Image.Resampling.LANCZOS)
-    left = max(0, (resized.width - target_w) // 2)
-    top = max(0, (resized.height - target_h) // 2)
-    return resized.crop((left, top, left + target_w, top + target_h))
+def draw_gradient(image: Image.Image, box: tuple[int, int, int, int]) -> None:
+    """Draw the Layout B dark readability gradient as a separate operation."""
+    x, y, width, height = box
+    overlay = Image.new("RGBA", (width, height), (0, 0, 0, 0))
+    pixels = overlay.load()
+    background = ImageColor.getrgb(color("background"))
+    for px in range(width):
+        strength = max(0.0, 1.0 - (px / max(1, width)) ** 0.72)
+        alpha = round(214 * strength)
+        for py in range(height):
+            pixels[px, py] = (*background, alpha)
+    image.paste(overlay, (x, y), overlay)
 
 
-def fit_contain(image: Image.Image, size: tuple[int, int], fill: str = CARD) -> Image.Image:
-    target_w, target_h = size
-    scale = min(target_w / image.width, target_h / image.height)
-    resized = image.resize((round(image.width * scale), round(image.height * scale)), Image.Resampling.LANCZOS)
-    result = Image.new("RGB", size, fill)
-    result.paste(resized, ((target_w - resized.width) // 2, (target_h - resized.height) // 2))
-    return result
+def rounded_border_shadow(
+    image: Image.Image,
+    box: tuple[int, int, int, int],
+    border_color: str,
+) -> None:
+    """Draw the shared rounded card shadow, fill, and border."""
+    x, y, width, height = box
+    draw = ImageDraw.Draw(image)
+    draw.rounded_rectangle(
+        (x + 10, y + 12, x + width + 10, y + height + 12),
+        radius=CARD_RADIUS,
+        fill=color("cardShadow"),
+    )
+    draw.rounded_rectangle(
+        (x, y, x + width, y + height),
+        radius=CARD_RADIUS,
+        fill=color("card"),
+        outline=border_color,
+        width=CARD_BORDER,
+    )
+
+
+def fit_cover(source: Image.Image, size: tuple[int, int]) -> Image.Image:
+    target_width, target_height = size
+    scale = max(target_width / source.width, target_height / source.height)
+    resized = source.resize(
+        (round(source.width * scale), round(source.height * scale)),
+        Image.Resampling.LANCZOS,
+    )
+    left = max(0, (resized.width - target_width) // 2)
+    top = max(0, (resized.height - target_height) // 2)
+    return resized.crop((left, top, left + target_width, top + target_height))
+
+
+def screenshot_card(
+    image: Image.Image,
+    screenshot: Image.Image,
+    box: tuple[int, int, int, int],
+    border_color: str,
+) -> None:
+    """Place a real capture inside a rounded screenshot card."""
+    rounded_border_shadow(image, box, border_color)
+    x, y, width, height = box
+    clipped = fit_cover(screenshot, (width - CARD_BORDER * 2, height - CARD_BORDER * 2))
+    mask = Image.new("L", clipped.size, 0)
+    ImageDraw.Draw(mask).rounded_rectangle(
+        (0, 0, clipped.width - 1, clipped.height - 1),
+        radius=max(0, CARD_RADIUS - CARD_BORDER),
+        fill=255,
+    )
+    image.paste(clipped, (x + CARD_BORDER, y + CARD_BORDER), mask)
 
 
 def base_canvas() -> Image.Image:
-    image = Image.new("RGB", CANVAS, BG)
-    pixels = image.load()
-    for y in range(CANVAS[1]):
-        blend = y / CANVAS[1]
-        r = round(17 + 7 * blend)
-        g = round(19 + 8 * blend)
-        b = round(24 + 12 * blend)
-        for x in range(CANVAS[0]):
-            pixels[x, y] = (r, g, b)
+    image = Image.new("RGB", CANVAS_SIZE, color("background"))
+    draw = ImageDraw.Draw(image)
+    draw.rectangle((0, 0, CANVAS_SIZE[0], CANVAS_SIZE[1] // 2), fill=color("background"))
+    draw.rectangle(
+        (0, CANVAS_SIZE[1] // 2, CANVAS_SIZE[0], CANVAS_SIZE[1]),
+        fill=color("background2"),
+    )
     return image
 
 
-def rounded_image(base: Image.Image, image: Image.Image, box: tuple[int, int, int, int], radius: int = 18, border: str = ACCENT) -> None:
-    draw = ImageDraw.Draw(base)
-    x, y, w, h = box
-    draw.rounded_rectangle((x + 8, y + 10, x + w + 8, y + h + 10), radius=radius, fill="#090B10")
-    draw.rounded_rectangle((x, y, x + w, y + h), radius=radius, fill=CARD, outline=border, width=2)
-    clipped = fit_cover(image, (w - 4, h - 4))
-    mask = Image.new("L", clipped.size, 0)
-    ImageDraw.Draw(mask).rounded_rectangle((0, 0, clipped.width - 1, clipped.height - 1), radius=max(0, radius - 3), fill=255)
-    base.paste(clipped, (x + 2, y + 2), mask)
+def text_width(draw: ImageDraw.ImageDraw, value: str, used_font: ImageFont.FreeTypeFont) -> int:
+    return draw.textbbox((0, 0), value, font=used_font)[2]
 
 
-def text(draw: ImageDraw.ImageDraw, xy: tuple[int, int], value: str, used_font: ImageFont.FreeTypeFont, fill: str = TEXT) -> None:
-    draw.text(xy, value, font=used_font, fill=fill)
+def wrap_text(
+    draw: ImageDraw.ImageDraw,
+    value: str,
+    used_font: ImageFont.FreeTypeFont,
+    max_width: int,
+    max_lines: int,
+) -> list[str]:
+    """Wrap text within the JSON-defined safe box while preserving explicit lines."""
+    result: list[str] = []
+    for paragraph in value.splitlines() or [""]:
+        words = paragraph.split()
+        if not words:
+            result.append("")
+            continue
+        current = words[0]
+        for word in words[1:]:
+            candidate = f"{current} {word}"
+            if text_width(draw, candidate, used_font) <= max_width:
+                current = candidate
+            else:
+                result.append(current)
+                current = word
+        result.append(current)
+    if len(result) > max_lines:
+        raise ValueError(f"Text wrapped to {len(result)} lines, limit is {max_lines}: {value!r}")
+    return result
 
 
-def heading(draw: ImageDraw.ImageDraw, title: str, tagline: str) -> None:
-    text(draw, (96, 88), title, TITLE_FONT)
-    text(draw, (98, 150), tagline, SUBTITLE_FONT, SECONDARY)
+def draw_title(
+    draw: ImageDraw.ImageDraw,
+    title: str,
+    box: tuple[int, int, int, int],
+    title_size_name: str,
+) -> int:
+    x, y, width, _ = box
+    used_font = font("bold", title_size_name)
+    lines = wrap_text(draw, title, used_font, width, 2)
+    line_height = SIZES[title_size_name] + 7
+    for index, line in enumerate(lines):
+        draw.text((x, y + index * line_height), line, font=used_font, fill=color("text"))
+    return y + len(lines) * line_height
 
 
-def footer(draw: ImageDraw.ImageDraw) -> None:
-    text(draw, (96, 1018), "Demo scene not included.", SMALL_FONT, SECONDARY)
-    label = "metyatech"
-    width = draw.textbbox((0, 0), label, font=SMALL_FONT)[2]
-    text(draw, (1824 - width, 1018), label, SMALL_FONT, TEXT)
+def draw_tagline(
+    draw: ImageDraw.ImageDraw,
+    tagline: str,
+    box: tuple[int, int, int, int],
+    start_y: int,
+) -> int:
+    x, _, width, _ = box
+    used_font = font("regular", "tagline")
+    lines = wrap_text(draw, tagline, used_font, width, 2)
+    line_height = SIZES["tagline"] + 8
+    for index, line in enumerate(lines):
+        draw.text(
+            (x, start_y + index * line_height),
+            line,
+            font=used_font,
+            fill=color("secondary"),
+        )
+    return start_y + len(lines) * line_height
 
 
-def proof(draw: ImageDraw.ImageDraw, value: str, color: str = ACCENT) -> None:
-    box = (96, 930, 420, 972)
-    draw.rounded_rectangle(box, radius=18, fill="#202632", outline=color, width=2)
-    text(draw, (116, 940), value, LABEL_FONT, color)
+def draw_proof(
+    draw: ImageDraw.ImageDraw,
+    proof: str,
+    x: int,
+    y: int,
+    max_width: int,
+    border_color: str,
+) -> None:
+    used_font = font("bold", "proof")
+    text_padding = 22
+    width = min(max_width, text_width(draw, proof, used_font) + text_padding * 2)
+    height = SIZES["proof"] + 28
+    draw.rounded_rectangle(
+        (x, y, x + width, y + height),
+        radius=18,
+        fill=color("background2"),
+        outline=border_color,
+        width=CARD_BORDER,
+    )
+    draw.text((x + text_padding, y + 12), proof, font=used_font, fill=border_color)
 
 
-def media_title(draw: ImageDraw.ImageDraw, label: str, box: tuple[int, int, int, int], color: str = ACCENT) -> None:
-    x, y, _, _ = box
-    draw.rounded_rectangle((x + 18, y + 18, x + 160, y + 56), radius=12, fill="#111318", outline=color, width=2)
-    text(draw, (x + 36, y + 27), label, LABEL_FONT, color)
+def draw_brand_disclaimer(draw: ImageDraw.ImageDraw) -> None:
+    margin = LAYOUT["canvas"]["safeMargin"]
+    draw.text(
+        (margin, CANVAS_SIZE[1] - margin - SIZES["disclaimer"]),
+        "Demo scene not included.",
+        font=font("regular", "disclaimer"),
+        fill=color("secondary"),
+    )
+    brand = "metyatech"
+    brand_width = text_width(draw, brand, font("bold", "brand"))
+    draw.text(
+        (CANVAS_SIZE[0] - margin - brand_width, CANVAS_SIZE[1] - margin - SIZES["brand"]),
+        brand,
+        font=font("bold", "brand"),
+        fill=color("text"),
+    )
 
 
-def make_hero() -> None:
-    image = base_canvas()
+def draw_code_card(
+    image: Image.Image,
+    box: tuple[int, int, int, int],
+    lines: Iterable[str],
+) -> None:
+    rounded_border_shadow(image, box, color("accent"))
     draw = ImageDraw.Draw(image)
-    heading(draw, "ACTOR METADATA OVERLAY", "See the data. Stay in the viewport.")
-    box = (96, 226, 1728, 662)
-    rounded_image(image, viewport(load_raw("selected-screen.png")), box)
-    proof(draw, "RULE-BASED EDITOR OVERLAYS")
-    footer(draw)
-    image.save(OUTPUT_ROOT / "01-actor-metadata-overlay-hero.jpg", quality=94, optimize=True, subsampling=0)
-
-
-def make_before_after() -> None:
-    image = base_canvas()
-    draw = ImageDraw.Draw(image)
-    heading(draw, "METADATA, WITHOUT THE PANEL HUNT", "The same level. The context is finally visible.")
-    left = (96, 264, 824, 560)
-    right = (1000, 264, 824, 560)
-    rounded_image(image, viewport(load_raw("before-off-screen.png")), left, border="#303743")
-    rounded_image(image, viewport(load_raw("selected-screen.png")), right, border=ACCENT)
-    media_title(draw, "BEFORE", left, SECONDARY)
-    media_title(draw, "AFTER", right, ACCENT)
-    footer(draw)
-    image.save(OUTPUT_ROOT / "02-before-after.jpg", quality=94, optimize=True, subsampling=0)
-
-
-def make_rule_settings() -> None:
-    image = base_canvas()
-    draw = ImageDraw.Draw(image)
-    heading(draw, "RULES THAT MATCH YOUR WORKFLOW", "Classes, tags, colors, distance and templates.")
-    rounded_image(image, settings_panel(load_raw("project-settings-rule0-screen.png")), (96, 226, 1728, 662), border=ACCENT)
-    proof(draw, "FIRST MATCH WINS", GREEN)
-    footer(draw)
-    image.save(OUTPUT_ROOT / "03-rule-settings.jpg", quality=94, optimize=True, subsampling=0)
-
-
-def make_selected_mode() -> None:
-    image = base_canvas()
-    draw = ImageDraw.Draw(image)
-    heading(draw, "FOCUS ON WHAT YOU SELECT", "Selected Actors mode keeps the viewport quiet.")
-    rounded_image(image, viewport(load_raw("selected-screen.png")), (96, 226, 1728, 662), border=ACCENT)
-    proof(draw, "SELECTED / ALL / OFF", ACCENT)
-    footer(draw)
-    image.save(OUTPUT_ROOT / "04-selected-mode.jpg", quality=94, optimize=True, subsampling=0)
-
-
-def make_distance_bounds() -> None:
-    image = base_canvas()
-    draw = ImageDraw.Draw(image)
-    heading(draw, "SEE WHAT MATTERS. HIDE THE REST.", "Distance filtering and optional bounds for dense levels.")
-    rounded_image(image, viewport(load_raw("all-distance-bounds-screen.png")), (96, 226, 1728, 662), border=GREEN)
-    proof(draw, "PER-RULE CONTROL", GREEN)
-    footer(draw)
-    image.save(OUTPUT_ROOT / "05-distance-and-bounds.jpg", quality=94, optimize=True, subsampling=0)
-
-
-def make_template_tokens() -> None:
-    image = base_canvas()
-    draw = ImageDraw.Draw(image)
-    heading(draw, "SHOW THE DATA YOU NEED", "Labels, tags, layers and safe direct properties.")
-    screenshot_box = (96, 226, 1088, 662)
-    code_box = (1220, 226, 604, 662)
-    rounded_image(image, viewport(load_raw("selected-screen.png")), screenshot_box, border=ACCENT)
-    x, y, w, h = code_box
-    draw.rounded_rectangle((x + 8, y + 10, x + w + 8, y + h + 10), radius=18, fill="#090B10")
-    draw.rounded_rectangle((x, y, x + w, y + h), radius=18, fill=CARD, outline=ACCENT, width=2)
-    text(draw, (x + 30, y + 28), "TEMPLATE TOKENS", LABEL_FONT, ACCENT)
-    lines = [
-        "{ActorLabel}",
-        "{ActorClass}",
-        "{ActorTags}",
-        "{GameplayTags}",
-        "{DataLayers}",
-        "{Property:State}",
-        "{Property:Priority}",
-    ]
-    line_y = y + 90
+    x, y, width, _ = box
+    draw.text((x + 30, y + 30), "TEMPLATE TOKENS", font=font("bold", "proof"), fill=color("accent"))
+    line_y = y + 94
+    line_height = SIZES["code"] + 25
     for line in lines:
-        text(draw, (x + 30, line_y), line, CODE_FONT, TEXT)
-        line_y += 58
-    proof(draw, "FLEXIBLE TEMPLATES", ACCENT)
-    footer(draw)
-    image.save(OUTPUT_ROOT / "06-template-tokens.jpg", quality=94, optimize=True, subsampling=0)
+        draw.text((x + 30, line_y), line, font=font("mono", "code"), fill=color("text"))
+        line_y += line_height
 
 
-def make_previews(finals: list[Path]) -> None:
-    REVIEW_ROOT.mkdir(parents=True, exist_ok=True)
-    thumbs = []
-    for path in finals:
-        thumb = Image.open(path).convert("RGB")
-        thumb.thumbnail((320, 180), Image.Resampling.LANCZOS)
-        canvas = Image.new("RGB", (320, 180), BG)
-        canvas.paste(thumb, ((320 - thumb.width) // 2, (180 - thumb.height) // 2))
-        thumbs.append((path.stem, canvas))
-    sheet = Image.new("RGB", (960, 540), BG)
-    for index, (name, thumb) in enumerate(thumbs):
-        sheet.paste(thumb, ((index % 3) * 320, (index // 3) * 180))
-    sheet.save(REVIEW_ROOT / "contact-sheet.jpg", quality=92, optimize=True)
-    sheet.resize((640, 360), Image.Resampling.LANCZOS).save(REVIEW_ROOT / "gallery-preview.jpg", quality=92, optimize=True)
-    thumbs[0][1].save(REVIEW_ROOT / "thumbnail-preview.jpg", quality=92, optimize=True)
+def load_source(name: str, crop_name: str) -> Image.Image:
+    path = RAW_ROOT / name
+    if not path.is_file():
+        raise FileNotFoundError(f"Missing real UE capture: {path}")
+    with Image.open(path) as source:
+        minimum_width, minimum_height = 2560, 1440
+        if source.width < minimum_width or source.height < minimum_height:
+            raise ValueError(f"Raw capture is below 2560x1440: {path} -> {source.size}")
+        source_image = source.convert("RGB")
+    crop = tuple(LAYOUT["sources"][crop_name]["crop"])
+    if crop_name == "settings":
+        return source_image.crop(crop)
+    return source_image.crop(crop)
+
+
+def layout_a(spec: dict, screenshot: Image.Image) -> Image.Image:
+    image = base_canvas()
+    draw = ImageDraw.Draw(image)
+    layout = LAYOUT["layouts"]["A"]
+    text_box = tuple(layout["text"])
+    text_end = draw_title(draw, spec["title"], text_box, "galleryTitle")
+    text_end = draw_tagline(draw, spec["tagline"], text_box, text_end + 28)
+    draw_proof(draw, spec["proof"], text_box[0], layout["proofY"], text_box[2], color("accentGreen"))
+    screenshot_card(image, screenshot, tuple(layout["screenshot"]), color("accent"))
+    draw_brand_disclaimer(draw)
+    return image
+
+
+def layout_b(spec: dict, screenshot: Image.Image) -> Image.Image:
+    image = base_canvas()
+    screenshot_box = tuple(LAYOUT["layouts"]["B"]["screenshot"])
+    screenshot_card(image, screenshot, screenshot_box, color("accent"))
+    draw_gradient(image, tuple(LAYOUT["layouts"]["B"]["gradient"]))
+    draw = ImageDraw.Draw(image)
+    text_box = tuple(LAYOUT["layouts"]["B"]["text"])
+    text_end = draw_title(draw, spec["title"], text_box, "heroTitle" if spec["order"] == 1 else "galleryTitle")
+    draw_tagline(draw, spec["tagline"], text_box, text_end + 30)
+    draw_proof(draw, spec["proof"], text_box[0], LAYOUT["layouts"]["B"]["proofY"], text_box[2], color("accent"))
+    draw_brand_disclaimer(draw)
+    return image
+
+
+def layout_c(spec: dict, before: Image.Image, after: Image.Image) -> Image.Image:
+    image = base_canvas()
+    draw = ImageDraw.Draw(image)
+    text_box = tuple(LAYOUT["layouts"]["C"]["text"])
+    text_end = draw_title(draw, spec["title"], text_box, "galleryTitle")
+    draw_tagline(draw, spec["tagline"], text_box, text_end + 16)
+    before_box = tuple(LAYOUT["layouts"]["C"]["before"])
+    after_box = tuple(LAYOUT["layouts"]["C"]["after"])
+    screenshot_card(image, before, before_box, color("secondary"))
+    screenshot_card(image, after, after_box, color("accent"))
+    divider_x = LAYOUT["layouts"]["C"]["dividerX"]
+    draw.line((divider_x, before_box[1], divider_x, before_box[1] + before_box[3]), fill=color("text"), width=CARD_BORDER)
+    label_font = font("bold", "beforeAfter")
+    draw.text((before_box[0] + 24, before_box[1] + 22), "BEFORE", font=label_font, fill=color("text"))
+    draw.text((after_box[0] + 24, after_box[1] + 22), "AFTER", font=label_font, fill=color("accent"))
+    draw_brand_disclaimer(draw)
+    return image
+
+
+def layout_a_tokens(spec: dict, screenshot: Image.Image) -> Image.Image:
+    image = base_canvas()
+    draw = ImageDraw.Draw(image)
+    layout = LAYOUT["layouts"]["AToken"]
+    text_box = tuple(layout["text"])
+    text_end = draw_title(draw, spec["title"], text_box, "galleryTitle")
+    draw_tagline(draw, spec["tagline"], text_box, text_end + 16)
+    screenshot_card(image, screenshot, tuple(layout["screenshot"]), color("accent"))
+    draw_code_card(
+        image,
+        tuple(layout["code"]),
+        [
+            "{ActorLabel}",
+            "Class: {ActorClass}",
+            "Tags: {ActorTags}",
+            "Gameplay: {GameplayTags}",
+            "Layer: {DataLayers}",
+            "Priority: {Property:Priority}",
+        ],
+    )
+    draw_proof(draw, spec["proof"], text_box[0], layout["proofY"], text_box[2], color("accent"))
+    draw_brand_disclaimer(draw)
+    return image
 
 
 def sha256(path: Path) -> str:
@@ -237,55 +409,175 @@ def sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
-def write_manifest(finals: list[Path]) -> None:
+def save_jpeg(image: Image.Image, path: Path) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    quality = 92
+    while True:
+        image.convert("RGB").save(
+            path,
+            format="JPEG",
+            quality=quality,
+            optimize=True,
+            subsampling=0,
+        )
+        if path.stat().st_size <= MAX_JPEG_BYTES:
+            return
+        if quality <= 84:
+            raise RuntimeError(f"JPEG remains above 2.8 MB at quality 84: {path}")
+        quality -= 2
+
+
+def make_review_outputs(finals: list[Path]) -> None:
+    preview_size = (LAYOUT["previews"]["width"], LAYOUT["previews"]["height"])
+    REVIEW_ROOT.mkdir(parents=True, exist_ok=True)
+    previews: list[tuple[Path, Image.Image]] = []
+    for final in finals:
+        with Image.open(final) as source:
+            previews.append((final, source.convert("RGB").resize(preview_size, Image.Resampling.LANCZOS)))
+
+    save_jpeg(previews[0][1], REVIEW_ROOT / "thumbnail-preview-320x180.jpg")
+    gallery = Image.new("RGB", (preview_size[0] * 3, preview_size[1] * 2), color("background"))
+    for index, (_, preview) in enumerate(previews):
+        gallery.paste(preview, ((index % 3) * preview_size[0], (index // 3) * preview_size[1]))
+    save_jpeg(gallery, REVIEW_ROOT / "gallery-preview-320x180.jpg")
+
+    cell_width = CANVAS_SIZE[0] // LAYOUT["previews"]["contactColumns"]
+    cell_height = LAYOUT["previews"]["contactCellHeight"]
+    contact = Image.new(
+        "RGB",
+        (cell_width * LAYOUT["previews"]["contactColumns"], cell_height * LAYOUT["previews"]["contactRows"]),
+        color("background"),
+    )
+    contact_draw = ImageDraw.Draw(contact)
+    label_font = font("regular", "disclaimer")
+    for index, (final, preview) in enumerate(previews):
+        cell_x = (index % 3) * cell_width
+        cell_y = (index // 3) * cell_height
+        thumb = fit_cover(preview, (cell_width - 32, cell_height - 48))
+        contact.paste(thumb, (cell_x + 16, cell_y + 8))
+        contact_draw.text(
+            (cell_x + 16, cell_y + cell_height - 32),
+            final.name,
+            font=label_font,
+            fill=color("text"),
+        )
+    save_jpeg(contact, REVIEW_ROOT / "contact-sheet.jpg")
+
+
+def parse_source_head() -> tuple[str, str]:
+    if not SOURCE_HEAD_PATH.is_file():
+        raise FileNotFoundError(f"Missing capture provenance: {SOURCE_HEAD_PATH}")
+    values: dict[str, str] = {}
+    for line in SOURCE_HEAD_PATH.read_text(encoding="utf-8").splitlines():
+        if ": " in line:
+            key, value = line.split(": ", 1)
+            values[key] = value
+    return values["Plugin HEAD"], ".verification/fab-media/host/ActorMetadataOverlaySmoke.uproject"
+
+
+def write_manifest(finals: list[Path], source_head: str, capture_project: str) -> None:
+    metadata = {item["filename"]: item for item in MEDIA}
     entries = []
-    source_map = {
-        "01-actor-metadata-overlay-hero.jpg": [".verification/fab-media/raw/selected-screen.png"],
-        "02-before-after.jpg": [".verification/fab-media/raw/before-off-screen.png", ".verification/fab-media/raw/selected-screen.png"],
-        "03-rule-settings.jpg": [".verification/fab-media/raw/project-settings-rule0-screen.png"],
-        "04-selected-mode.jpg": [".verification/fab-media/raw/selected-screen.png"],
-        "05-distance-and-bounds.jpg": [".verification/fab-media/raw/all-distance-bounds-screen.png"],
-        "06-template-tokens.jpg": [".verification/fab-media/raw/selected-screen.png"],
-    }
-    for path in finals:
-        with Image.open(path) as opened:
-            entries.append({
-                "filename": path.name,
-                "width": opened.width,
-                "height": opened.height,
-                "format": "JPEG",
-                "mode": opened.mode,
-                "bytes": path.stat().st_size,
-                "sha256": sha256(path),
-                "source_captures": source_map[path.name],
-                "capture_engine": "Unreal Engine 5.8 Level Editor viewport",
-                "ai_generated": False,
-            })
+    for final in finals:
+        item = metadata[final.name]
+        with Image.open(final) as opened:
+            entries.append(
+                {
+                    "order": item["order"],
+                    "filename": final.name,
+                    "role": item["role"],
+                    "title": item["title"].replace("\n", " "),
+                    "tagline": item["tagline"],
+                    "proof": item["proof"],
+                    "width": opened.width,
+                    "height": opened.height,
+                    "format": "JPEG",
+                    "mode": opened.mode,
+                    "sizeBytes": final.stat().st_size,
+                    "sha256": sha256(final),
+                    "sourceCaptures": [
+                        f".verification/fab-media/raw/{name}"
+                        for name in item.get("sources", [item.get("source")])
+                        if name
+                    ],
+                }
+            )
     manifest = {
-        "product": "Actor Metadata Overlay",
-        "source_commit": SOURCE_COMMIT,
-        "design_system": "Fab 1920x1080 dark overlay system",
-        "capture_project": ".verification/fab-media/host/ActorMetadataOverlaySmoke.uproject",
-        "capture_date": "2026-07-23",
-        "assets": entries,
+        "productName": "Actor Metadata Overlay",
+        "productVersion": "2.0.0",
+        "designSystemVersion": LAYOUT["designSystemVersion"],
+        "thumbnail": "final/01-actor-metadata-overlay-hero.jpg",
+        "canvasWidth": CANVAS_SIZE[0],
+        "canvasHeight": CANVAS_SIZE[1],
+        "accentColor": color("accent"),
+        "backgroundColor": color("background"),
+        "generatedAtUtc": datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
+        "sourcePluginHead": source_head,
+        "captureProject": capture_project,
+        "captureEngine": "Unreal Engine 5.8 Level Editor viewport",
+        "files": entries,
     }
-    (FAB_ROOT / "media-manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+    (FAB_ROOT / "media-manifest.json").write_text(
+        json.dumps(manifest, indent=2) + "\n",
+        encoding="utf-8",
+    )
 
 
 def main() -> None:
-    OUTPUT_ROOT.mkdir(parents=True, exist_ok=True)
-    make_hero()
-    make_before_after()
-    make_rule_settings()
-    make_selected_mode()
-    make_distance_bounds()
-    make_template_tokens()
-    finals = sorted(OUTPUT_ROOT.glob("*.jpg"))
-    if len(finals) != 6:
-        raise RuntimeError(f"Expected six final JPGs, found {len(finals)}")
-    make_previews(finals)
-    write_manifest(finals)
-    print(json.dumps({"finals": [path.name for path in finals], "manifest": str(FAB_ROOT / "media-manifest.json")}, indent=2))
+    source_head, capture_project = parse_source_head()
+    required_sources = sorted(
+        {
+            name
+            for item in MEDIA
+            for name in item.get("sources", [item.get("source")])
+            if name
+        }
+    )
+    for source in required_sources:
+        source_path = RAW_ROOT / source
+        if not source_path.is_file():
+            raise FileNotFoundError(f"Missing required raw capture: {source_path}")
+        with Image.open(source_path) as opened:
+            if opened.width < 2560 or opened.height < 1440:
+                raise ValueError(f"Raw capture below 2560x1440: {source_path} -> {opened.size}")
+
+    FINAL_ROOT.mkdir(parents=True, exist_ok=True)
+    expected_final_names = {item["filename"] for item in MEDIA}
+    unexpected_existing = [
+        path for path in FINAL_ROOT.iterdir()
+        if path.is_file() and path.name not in expected_final_names
+    ]
+    if unexpected_existing:
+        raise RuntimeError(f"final/ contains unexpected files before generation: {unexpected_existing}")
+
+    for spec in MEDIA:
+        if spec["layout"] == "C":
+            before = load_source(spec["sources"][0], spec["crops"][0])
+            after = load_source(spec["sources"][1], spec["crops"][1])
+            rendered = layout_c(spec, before, after)
+        else:
+            screenshot = load_source(spec["source"], spec["crop"])
+            if spec["layout"] == "A":
+                rendered = layout_a(spec, screenshot)
+            elif spec["layout"] == "B":
+                rendered = layout_b(spec, screenshot)
+            elif spec["layout"] == "AToken":
+                rendered = layout_a_tokens(spec, screenshot)
+            else:
+                raise ValueError(f"Unknown layout: {spec['layout']}")
+        save_jpeg(rendered, FINAL_ROOT / spec["filename"])
+
+    finals = [FINAL_ROOT / item["filename"] for item in MEDIA]
+    actual_final_names = sorted(path.name for path in FINAL_ROOT.glob("*.jpg"))
+    expected_final_names = sorted(expected_final_names)
+    if actual_final_names != expected_final_names:
+        raise RuntimeError(f"final/ contains unexpected files: {actual_final_names}")
+    total_bytes = sum(path.stat().st_size for path in finals)
+    if total_bytes >= MAX_TOTAL_BYTES:
+        raise RuntimeError(f"Final image total is >= 20 MB: {total_bytes}")
+    make_review_outputs(finals)
+    write_manifest(finals, source_head, capture_project)
+    print(json.dumps({"finals": [path.name for path in finals], "totalBytes": total_bytes}, indent=2))
 
 
 if __name__ == "__main__":

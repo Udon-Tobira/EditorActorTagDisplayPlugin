@@ -1,94 +1,119 @@
 {
-  "product": "Actor Metadata Overlay",
-  "source_commit": "84f588dadd06f28cd19e5579d90928d603cc6236",
-  "design_system": "Fab 1920x1080 dark overlay system",
-  "capture_project": ".verification/fab-media/host/ActorMetadataOverlaySmoke.uproject",
-  "capture_date": "2026-07-23",
-  "assets": [
+  "productName": "Actor Metadata Overlay",
+  "productVersion": "2.0.0",
+  "designSystemVersion": "amo-fab-v2",
+  "thumbnail": "final/01-actor-metadata-overlay-hero.jpg",
+  "canvasWidth": 1920,
+  "canvasHeight": 1080,
+  "accentColor": "#36C8FF",
+  "backgroundColor": "#111318",
+  "generatedAtUtc": "2026-07-25T05:39:15Z",
+  "sourcePluginHead": "72d8ea6780b2c97ccaf1a1c8aaf4825f26e6bc22",
+  "captureProject": ".verification/fab-media/host/ActorMetadataOverlaySmoke.uproject",
+  "captureEngine": "Unreal Engine 5.8 Level Editor viewport",
+  "files": [
     {
+      "order": 1,
       "filename": "01-actor-metadata-overlay-hero.jpg",
+      "role": "thumbnail",
+      "title": "ACTOR METADATA OVERLAY",
+      "tagline": "See the data. Stay in the viewport.",
+      "proof": "RULE-BASED EDITOR OVERLAYS",
       "width": 1920,
       "height": 1080,
       "format": "JPEG",
       "mode": "RGB",
-      "bytes": 373405,
-      "sha256": "cfb0e7e2912b9a134951b4ba9c542772dfd8849aa4ae8aba59b1335462fdbb9a",
-      "source_captures": [
-        ".verification/fab-media/raw/selected-screen.png"
-      ],
-      "capture_engine": "Unreal Engine 5.8 Level Editor viewport",
-      "ai_generated": false
+      "sizeBytes": 361731,
+      "sha256": "8509403e3c37cf84b57d05de80025d1fb1228b6defef10b282de9be5e0bdcce1",
+      "sourceCaptures": [
+        ".verification/fab-media/raw/hero-all.png"
+      ]
     },
     {
+      "order": 2,
       "filename": "02-before-after.jpg",
+      "role": "gallery",
+      "title": "METADATA, WITHOUT THE PANEL HUNT",
+      "tagline": "The same level. The context is finally visible.",
+      "proof": "BEFORE/AFTER",
       "width": 1920,
       "height": 1080,
       "format": "JPEG",
       "mode": "RGB",
-      "bytes": 355127,
-      "sha256": "d7da1ae6aee05db70eb3f4cdda171be9acbd7b80f620db6384a39b9effd941de",
-      "source_captures": [
-        ".verification/fab-media/raw/before-off-screen.png",
-        ".verification/fab-media/raw/selected-screen.png"
-      ],
-      "capture_engine": "Unreal Engine 5.8 Level Editor viewport",
-      "ai_generated": false
+      "sizeBytes": 314159,
+      "sha256": "54f4b0d91f52af4725730de538a39797ba85960b1971b3733d053bac47af1022",
+      "sourceCaptures": [
+        ".verification/fab-media/raw/before.png",
+        ".verification/fab-media/raw/after.png"
+      ]
     },
     {
+      "order": 3,
       "filename": "03-rule-settings.jpg",
+      "role": "gallery",
+      "title": "RULES THAT MATCH YOUR WORKFLOW",
+      "tagline": "Classes, tags, colors, distance and templates.",
+      "proof": "FIRST MATCH WINS",
       "width": 1920,
       "height": 1080,
       "format": "JPEG",
       "mode": "RGB",
-      "bytes": 221318,
-      "sha256": "6aa6622606dfa439a382b789e16cb0906350d654c6df3979c7ee1b593b295d34",
-      "source_captures": [
-        ".verification/fab-media/raw/project-settings-rule0-screen.png"
-      ],
-      "capture_engine": "Unreal Engine 5.8 Level Editor viewport",
-      "ai_generated": false
+      "sizeBytes": 182180,
+      "sha256": "130a35c3854e70b93fe0bc65f1eeda17298cc73499422c4d24527270b81a100c",
+      "sourceCaptures": [
+        ".verification/fab-media/raw/project-settings.png"
+      ]
     },
     {
+      "order": 4,
       "filename": "04-selected-mode.jpg",
+      "role": "gallery",
+      "title": "FOCUS ON WHAT YOU SELECT",
+      "tagline": "Selected Actors mode keeps the viewport quiet.",
+      "proof": "SELECTED / ALL / OFF",
       "width": 1920,
       "height": 1080,
       "format": "JPEG",
       "mode": "RGB",
-      "bytes": 374069,
-      "sha256": "35d99dd519adaaa4cd57e412a62937b7ba20b9b260559554fb0de0f83cfbd6a0",
-      "source_captures": [
-        ".verification/fab-media/raw/selected-screen.png"
-      ],
-      "capture_engine": "Unreal Engine 5.8 Level Editor viewport",
-      "ai_generated": false
+      "sizeBytes": 343229,
+      "sha256": "3de1fc2599cca2bc8eee365cc01885dda12e8314410979e23a98d21c93885914",
+      "sourceCaptures": [
+        ".verification/fab-media/raw/selected.png"
+      ]
     },
     {
+      "order": 5,
       "filename": "05-distance-and-bounds.jpg",
+      "role": "gallery",
+      "title": "SEE WHAT MATTERS. HIDE THE REST.",
+      "tagline": "Distance filtering and optional bounds for dense levels.",
+      "proof": "PER-RULE CONTROL",
       "width": 1920,
       "height": 1080,
       "format": "JPEG",
       "mode": "RGB",
-      "bytes": 387000,
-      "sha256": "cca1c355a660e132eb4335c4a7c7b5761c05d8a5c2d792b3dac002d3f465d583",
-      "source_captures": [
-        ".verification/fab-media/raw/all-distance-bounds-screen.png"
-      ],
-      "capture_engine": "Unreal Engine 5.8 Level Editor viewport",
-      "ai_generated": false
+      "sizeBytes": 258563,
+      "sha256": "bddbb56bd760b2eca48ade78d8630d99b851df9d419782da0c672efa5c8ba518",
+      "sourceCaptures": [
+        ".verification/fab-media/raw/distance-bounds.png"
+      ]
     },
     {
+      "order": 6,
       "filename": "06-template-tokens.jpg",
+      "role": "gallery",
+      "title": "SHOW THE DATA YOU NEED",
+      "tagline": "Labels, tags, layers and safe direct properties.",
+      "proof": "FLEXIBLE TEMPLATES",
       "width": 1920,
       "height": 1080,
       "format": "JPEG",
       "mode": "RGB",
-      "bytes": 321465,
-      "sha256": "74cb57d656a1b86d0eb0bc41e0aac13ce12757a3addd763b8f5ead87e88ae3c6",
-      "source_captures": [
-        ".verification/fab-media/raw/selected-screen.png"
-      ],
-      "capture_engine": "Unreal Engine 5.8 Level Editor viewport",
-      "ai_generated": false
+      "sizeBytes": 272405,
+      "sha256": "498745b37200a2503d0749e06dfae5ffee1ceda4392b219e18768c90089284b4",
+      "sourceCaptures": [
+        ".verification/fab-media/raw/all-tokens.png"
+      ]
     }
   ]
 }
