@@ -1,15 +1,15 @@
 {
   "productName": "Actor Metadata Overlay",
   "productVersion": "2.0.0",
-  "designSystemVersion": "amo-fab-v2",
+  "designSystemVersion": "amo-fab-v4",
   "thumbnail": "final/01-actor-metadata-overlay-hero.jpg",
   "canvasWidth": 1920,
   "canvasHeight": 1080,
   "accentColor": "#36C8FF",
   "backgroundColor": "#111318",
-  "generatedAtUtc": "2026-07-27T05:26:35Z",
-  "sourcePluginHead": "aca53073e2b5140b344cb9373e3ac1a69f5d712f",
-  "captureProject": ".verification/fab-media/host/ActorMetadataOverlaySmoke.uproject",
+  "generatedAtUtc": "2026-07-27T13:30:17Z",
+  "sourcePluginHead": "936052aea6285a02906862c97405c2307dda6136",
+  "captureProject": ".verification/fab-media-v4/host/HostProject/DeepWaterStationHost.uproject",
   "captureEngine": "Unreal Engine 5.8 Level Editor viewport",
   "files": [
     {
@@ -23,10 +23,13 @@
       "height": 1080,
       "format": "JPEG",
       "mode": "RGB",
-      "sizeBytes": 361731,
-      "sha256": "8509403e3c37cf84b57d05de80025d1fb1228b6defef10b282de9be5e0bdcce1",
+      "sizeBytes": 460495,
+      "sha256": "565e0a0f2d1afe7095e0d54a4dfde574617f3a704ce6d50dda7b001ac0a70466",
       "sourceCaptures": [
-        ".verification/fab-media/raw/hero-all.png"
+        ".verification/fab-media-v4/raw/hero-all.png"
+      ],
+      "displayCaptures": [
+        ".verification/fab-media-v4/raw/readable/hero-all.png"
       ]
     },
     {
@@ -40,11 +43,15 @@
       "height": 1080,
       "format": "JPEG",
       "mode": "RGB",
-      "sizeBytes": 314159,
-      "sha256": "54f4b0d91f52af4725730de538a39797ba85960b1971b3733d053bac47af1022",
+      "sizeBytes": 390867,
+      "sha256": "9883dd26d152d3a734664338d4bd9e1572acd3c2142803c0da85f559584d1458",
       "sourceCaptures": [
-        ".verification/fab-media/raw/before.png",
-        ".verification/fab-media/raw/after.png"
+        ".verification/fab-media-v4/raw/before.png",
+        ".verification/fab-media-v4/raw/after.png"
+      ],
+      "displayCaptures": [
+        ".verification/fab-media-v4/raw/readable/before.png",
+        ".verification/fab-media-v4/raw/readable/after.png"
       ]
     },
     {
@@ -58,10 +65,10 @@
       "height": 1080,
       "format": "JPEG",
       "mode": "RGB",
-      "sizeBytes": 182180,
-      "sha256": "130a35c3854e70b93fe0bc65f1eeda17298cc73499422c4d24527270b81a100c",
+      "sizeBytes": 180141,
+      "sha256": "4ec2c204f273bda0bd54d263d39fe6e1e04b1379e2e253e7d82f55200a884f76",
       "sourceCaptures": [
-        ".verification/fab-media/raw/project-settings.png"
+        ".verification/fab-media-v4/raw/project-settings.png"
       ]
     },
     {
@@ -69,16 +76,19 @@
       "filename": "04-selected-mode.jpg",
       "role": "gallery",
       "title": "FOCUS ON WHAT YOU SELECT",
-      "tagline": "Selected Actors mode keeps the viewport quiet.",
+      "tagline": "Selected Actors mode\nkeeps the viewport quiet.",
       "proof": "SELECTED / ALL / OFF",
       "width": 1920,
       "height": 1080,
       "format": "JPEG",
       "mode": "RGB",
-      "sizeBytes": 343229,
-      "sha256": "3de1fc2599cca2bc8eee365cc01885dda12e8314410979e23a98d21c93885914",
+      "sizeBytes": 289229,
+      "sha256": "878f3f0e75d7040484e33d8f8a22070fad78ade1af968f2d42cf90d209d9da66",
       "sourceCaptures": [
-        ".verification/fab-media/raw/selected.png"
+        ".verification/fab-media-v4/raw/selected.png"
+      ],
+      "displayCaptures": [
+        ".verification/fab-media-v4/raw/readable/selected.png"
       ]
     },
     {
@@ -92,10 +102,13 @@
       "height": 1080,
       "format": "JPEG",
       "mode": "RGB",
-      "sizeBytes": 258563,
-      "sha256": "bddbb56bd760b2eca48ade78d8630d99b851df9d419782da0c672efa5c8ba518",
+      "sizeBytes": 301274,
+      "sha256": "0a61283eee8b7b657725f77f02a9165d2d7a33245c616bea6742064502a020b3",
       "sourceCaptures": [
-        ".verification/fab-media/raw/distance-bounds.png"
+        ".verification/fab-media-v4/raw/distance-bounds.png"
+      ],
+      "displayCaptures": [
+        ".verification/fab-media-v4/raw/readable/distance-bounds.png"
       ]
     },
     {
@@ -109,12 +122,15 @@
       "height": 1080,
       "format": "JPEG",
       "mode": "RGB",
-      "sizeBytes": 268301,
-      "sha256": "88d819b4d18f084362808626e45955e0d39a9f5e4e43f5e9d5a4433627e40058",
+      "sizeBytes": 284013,
+      "sha256": "65b61991a691c2a9f7a0e5c75ce4f60eb55caddb3b0dae33ee84657f018d5175",
       "sourceCaptures": [
-        ".verification/fab-media/raw/all-tokens.png"
+        ".verification/fab-media-v4/raw/all-tokens.png"
       ],
-      "validationEvidence": ".verification/fab-media/raw/all-tokens-validation.json"
+      "displayCaptures": [
+        ".verification/fab-media-v4/raw/readable/all-tokens.png"
+      ],
+      "validationEvidence": ".verification/fab-media-v4/raw/all-tokens-validation.json"
     }
   ]
 }

@@ -13,10 +13,13 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 FAB_ROOT = REPO_ROOT / "Marketing" / "Fab"
 FINAL_ROOT = FAB_ROOT / "final"
 REVIEW_ROOT = FAB_ROOT / "review"
-RAW_ROOT = REPO_ROOT / ".verification" / "fab-media" / "raw"
+RAW_ROOT = REPO_ROOT / ".verification" / "fab-media-v4" / "raw"
 LAYOUT_PATH = FAB_ROOT / "source" / "media-layout.json"
-SOURCE_HEAD_PATH = REPO_ROOT / ".verification" / "fab-media" / "source-head.txt"
+SOURCE_HEAD_PATH = REPO_ROOT / ".verification" / "fab-media-v4" / "source-head.txt"
 VALIDATION_PATH = RAW_ROOT / "all-tokens-validation.json"
+TOKEN_PROOF_PATH = RAW_ROOT / "all-tokens-overlay-proof.png"
+PREVIEW_CHECK_PATH = RAW_ROOT / "preview-check.json"
+BEFORE_AFTER_VALIDATION_PATH = REPO_ROOT / ".verification" / "fab-media-v4" / "before-after-validation.json"
 MAX_JPEG_BYTES = 2_800_000
 MAX_TOTAL_BYTES = 20_000_000
 
@@ -28,6 +31,8 @@ MEDIA = [
         "role": "thumbnail",
         "layout": "B",
         "source": "hero-all.png",
+        "displaySource": "readable/hero-all.png",
+        "displayCrop": "readableFull",
         "crop": "viewport",
         "title": "ACTOR METADATA\nOVERLAY",
         "tagline": "See the data. Stay in the viewport.",
@@ -39,6 +44,8 @@ MEDIA = [
         "role": "gallery",
         "layout": "C",
         "sources": ["before.png", "after.png"],
+        "displaySources": ["readable/before.png", "readable/after.png"],
+        "displayCrops": ["readableFull", "readableFull"],
         "crops": ["viewport", "viewport"],
         "title": "METADATA, WITHOUT\nTHE PANEL HUNT",
         "tagline": "The same level. The context is finally visible.",
@@ -59,11 +66,13 @@ MEDIA = [
         "order": 4,
         "filename": "04-selected-mode.jpg",
         "role": "gallery",
-        "layout": "B",
+        "layout": "A",
         "source": "selected.png",
+        "displaySource": "readable/selected.png",
+        "displayCrop": "readableSelected",
         "crop": "scaledViewport",
         "title": "FOCUS ON WHAT\nYOU SELECT",
-        "tagline": "Selected Actors mode keeps the viewport quiet.",
+        "tagline": "Selected Actors mode\nkeeps the viewport quiet.",
         "proof": "SELECTED / ALL / OFF",
     },
     {
@@ -72,6 +81,8 @@ MEDIA = [
         "role": "gallery",
         "layout": "A",
         "source": "distance-bounds.png",
+        "displaySource": "readable/distance-bounds.png",
+        "displayCrop": "readableDistance",
         "crop": "viewport",
         "title": "SEE WHAT MATTERS.\nHIDE THE REST.",
         "tagline": "Distance filtering and optional bounds for dense levels.",
@@ -83,6 +94,8 @@ MEDIA = [
         "role": "gallery",
         "layout": "AToken",
         "source": "all-tokens.png",
+        "displaySource": "readable/all-tokens.png",
+        "displayCrop": "readableTokens",
         "crop": "scaledViewport",
         "title": "SHOW THE DATA\nYOU NEED",
         "tagline": "Labels, tags, layers and safe direct properties.",
@@ -123,7 +136,7 @@ def draw_gradient(image: Image.Image, box: tuple[int, int, int, int]) -> None:
     background = ImageColor.getrgb(color("background"))
     for px in range(width):
         strength = max(0.0, 1.0 - (px / max(1, width)) ** 0.72)
-        alpha = round(214 * strength)
+        alpha = round(244 * strength)
         for py in range(height):
             pixels[px, py] = (*background, alpha)
     image.paste(overlay, (x, y), overlay)
@@ -290,14 +303,27 @@ def draw_brand_disclaimer(draw: ImageDraw.ImageDraw) -> None:
         font=font("regular", "disclaimer"),
         fill=color("secondary"),
     )
-    brand = "metyatech"
-    brand_width = text_width(draw, brand, font("bold", "brand"))
-    draw.text(
-        (CANVAS_SIZE[0] - margin - brand_width, CANVAS_SIZE[1] - margin - SIZES["brand"]),
-        brand,
-        font=font("bold", "brand"),
-        fill=color("text"),
+
+
+def draw_image_label_plate(
+    draw: ImageDraw.ImageDraw,
+    label: str,
+    x: int,
+    y: int,
+    border_color: str,
+) -> None:
+    used_font = font("bold", "beforeAfter")
+    padding_x = 18
+    padding_y = 10
+    left, top, right, bottom = draw.textbbox((0, 0), label, font=used_font)
+    draw.rounded_rectangle(
+        (x, y, x + right - left + padding_x * 2, y + bottom - top + padding_y * 2),
+        radius=12,
+        fill=color("cardShadow"),
+        outline=border_color,
+        width=CARD_BORDER,
     )
+    draw.text((x + padding_x, y + padding_y - top), label, font=used_font, fill=color("text"))
 
 
 def draw_code_card(
@@ -316,14 +342,11 @@ def draw_code_card(
         line_y += line_height
 
 
-def load_source(name: str, crop_name: str) -> Image.Image:
-    path = RAW_ROOT / name
+def load_source(name: str, crop_name: str, display_name: str | None = None) -> Image.Image:
+    path = RAW_ROOT / (display_name or name)
     if not path.is_file():
         raise FileNotFoundError(f"Missing real UE capture: {path}")
     with Image.open(path) as source:
-        minimum_width, minimum_height = 2560, 1440
-        if source.width < minimum_width or source.height < minimum_height:
-            raise ValueError(f"Raw capture is below 2560x1440: {path} -> {source.size}")
         source_image = source.convert("RGB")
     crop = tuple(LAYOUT["sources"][crop_name]["crop"])
     if crop_name == "settings":
@@ -370,9 +393,8 @@ def layout_c(spec: dict, before: Image.Image, after: Image.Image) -> Image.Image
     screenshot_card(image, after, after_box, color("accent"))
     divider_x = LAYOUT["layouts"]["C"]["dividerX"]
     draw.line((divider_x, before_box[1], divider_x, before_box[1] + before_box[3]), fill=color("text"), width=CARD_BORDER)
-    label_font = font("bold", "beforeAfter")
-    draw.text((before_box[0] + 24, before_box[1] + 22), "BEFORE", font=label_font, fill=color("text"))
-    draw.text((after_box[0] + 24, after_box[1] + 22), "AFTER", font=label_font, fill=color("accent"))
+    draw_image_label_plate(draw, "BEFORE", before_box[0] + 20, before_box[1] + 18, color("secondary"))
+    draw_image_label_plate(draw, "AFTER", after_box[0] + 20, after_box[1] + 18, color("accent"))
     draw_brand_disclaimer(draw)
     return image
 
@@ -391,9 +413,10 @@ def layout_a_tokens(spec: dict, screenshot: Image.Image) -> Image.Image:
         [
             "{ActorLabel}",
             "Class: {ActorClass}",
-            "Tags: {ActorTags}",
+            "Actor Tags: {ActorTags}",
             "Gameplay: {GameplayTags}",
             "Layer: {DataLayers}",
+            "State: {Property:State}",
             "Priority: {Property:Priority}",
         ],
     )
@@ -473,12 +496,14 @@ def parse_source_head() -> tuple[str, str]:
         if ": " in line:
             key, value = line.split(": ", 1)
             values[key] = value
-    return values["Plugin HEAD"], ".verification/fab-media/host/ActorMetadataOverlaySmoke.uproject"
+    return values["Plugin HEAD"], ".verification/fab-media-v4/host/HostProject/DeepWaterStationHost.uproject"
 
 
 def validate_all_tokens_capture() -> None:
     if not VALIDATION_PATH.is_file():
         raise FileNotFoundError(f"Missing host validation JSON: {VALIDATION_PATH}")
+    if not TOKEN_PROOF_PATH.is_file():
+        raise FileNotFoundError(f"Missing Gameplay Tags visual proof: {TOKEN_PROOF_PATH}")
     with VALIDATION_PATH.open(encoding="utf-8") as stream:
         validation = json.load(stream)
     if validation.get("implementsGameplayTagAssetInterface") is not True:
@@ -501,6 +526,47 @@ def validate_all_tokens_capture() -> None:
         raise ValueError("Host validation rawCapture must be all-tokens.png")
 
 
+def validate_preview_check() -> None:
+    if not PREVIEW_CHECK_PATH.is_file():
+        raise FileNotFoundError(f"Missing Preview visual check: {PREVIEW_CHECK_PATH}")
+    with PREVIEW_CHECK_PATH.open(encoding="utf-8") as stream:
+        preview_check = json.load(stream)
+    required_names = {
+        "hero-all.png",
+        "before.png",
+        "after.png",
+        "project-settings.png",
+        "selected.png",
+        "distance-bounds.png",
+        "all-tokens.png",
+    }
+    if any(preview_check.get(name) is not True for name in required_names):
+        raise ValueError("Every raw capture must pass the Preview visual check")
+    if preview_check.get("visualCheck") is not True:
+        raise ValueError("Preview visualCheck must be true after visual inspection")
+
+
+def validate_before_after() -> None:
+    if not BEFORE_AFTER_VALIDATION_PATH.is_file():
+        raise FileNotFoundError(f"Missing Before/After validation: {BEFORE_AFTER_VALIDATION_PATH}")
+    with BEFORE_AFTER_VALIDATION_PATH.open(encoding="utf-8") as stream:
+        validation = json.load(stream)
+    expected = {
+        "sameDimensions": True,
+        "sameCamera": True,
+        "gameViewBefore": False,
+        "gameViewAfter": False,
+        "displayModeBefore": "Off",
+        "displayModeAfter": "All Matching Actors",
+        "environmentVisibleBefore": True,
+        "environmentVisibleAfter": True,
+        "differenceLimitedToOverlay": True,
+        "visualCheck": True,
+    }
+    if any(validation.get(key) != value for key, value in expected.items()):
+        raise ValueError("Before/After validation does not match the required capture contract")
+
+
 def write_manifest(finals: list[Path], source_head: str, capture_project: str) -> None:
     metadata = {item["filename"]: item for item in MEDIA}
     entries = []
@@ -521,13 +587,22 @@ def write_manifest(finals: list[Path], source_head: str, capture_project: str) -
                 "sizeBytes": final.stat().st_size,
                 "sha256": sha256(final),
                 "sourceCaptures": [
-                    f".verification/fab-media/raw/{name}"
+                    f".verification/fab-media-v4/raw/{name}"
                     for name in item.get("sources", [item.get("source")])
                     if name
                 ],
             }
+            if item.get("displaySource"):
+                entry["displayCaptures"] = [
+                    f".verification/fab-media-v4/raw/{item['displaySource']}"
+                ]
+            if item.get("displaySources"):
+                entry["displayCaptures"] = [
+                    f".verification/fab-media-v4/raw/{name}"
+                    for name in item["displaySources"]
+                ]
             if item["order"] == 6:
-                entry["validationEvidence"] = ".verification/fab-media/raw/all-tokens-validation.json"
+                entry["validationEvidence"] = ".verification/fab-media-v4/raw/all-tokens-validation.json"
             entries.append(entry)
     manifest = {
         "productName": "Actor Metadata Overlay",
@@ -553,6 +628,8 @@ def write_manifest(finals: list[Path], source_head: str, capture_project: str) -
 def main() -> None:
     source_head, capture_project = parse_source_head()
     validate_all_tokens_capture()
+    validate_preview_check()
+    validate_before_after()
     required_sources = sorted(
         {
             name
@@ -580,11 +657,15 @@ def main() -> None:
 
     for spec in MEDIA:
         if spec["layout"] == "C":
-            before = load_source(spec["sources"][0], spec["crops"][0])
-            after = load_source(spec["sources"][1], spec["crops"][1])
+            before = load_source(spec["sources"][0], spec["displayCrops"][0], spec["displaySources"][0])
+            after = load_source(spec["sources"][1], spec["displayCrops"][1], spec["displaySources"][1])
             rendered = layout_c(spec, before, after)
         else:
-            screenshot = load_source(spec["source"], spec["crop"])
+            screenshot = load_source(
+                spec["source"],
+                spec.get("displayCrop", spec["crop"]),
+                spec.get("displaySource"),
+            )
             if spec["layout"] == "A":
                 rendered = layout_a(spec, screenshot)
             elif spec["layout"] == "B":

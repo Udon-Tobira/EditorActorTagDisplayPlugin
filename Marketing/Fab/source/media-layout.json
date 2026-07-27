@@ -1,5 +1,5 @@
 {
-  "designSystemVersion": "amo-fab-v2",
+  "designSystemVersion": "amo-fab-v4",
   "canvas": {
     "width": 1920,
     "height": 1080,
@@ -25,9 +25,8 @@
     "galleryTitle": 64,
     "tagline": 30,
     "proof": 22,
-    "brand": 22,
     "disclaimer": 18,
-    "beforeAfter": 28,
+    "beforeAfter": 40,
     "code": 24
   },
   "cards": {
@@ -50,7 +49,7 @@
       "screenshot": [40, 40, 1840, 940],
       "text": [120, 176, 820, 620],
       "proofY": 748,
-      "gradient": [0, 0, 980, 1020]
+      "gradient": [0, 0, 1120, 1020]
     },
     "C": {
       "text": [96, 84, 1728, 170],
@@ -68,6 +67,18 @@
     },
     "settings": {
       "crop": [0, 0, 2560, 1440]
+    },
+    "readableFull": {
+      "crop": [0, 0, 1920, 1000]
+    },
+    "readableSelected": {
+      "crop": [0, 0, 1300, 1000]
+    },
+    "readableDistance": {
+      "crop": [700, 250, 1900, 950]
+    },
+    "readableTokens": {
+      "crop": [100, 300, 850, 700]
     }
   },
   "previews": {
