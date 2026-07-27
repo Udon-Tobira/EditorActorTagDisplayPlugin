@@ -25,6 +25,8 @@ python Marketing/Fab/source/generate-fab-media.py
 
 The JSON-driven generator reads `source/media-layout.json`, validates the seven real raw captures at least 2560x1440, writes exactly six 1920x1080 JPEGs to `final/`, writes the three review images to `review/`, and regenerates `media-manifest.json`. JPEG output starts at quality 92 with optimization and 4:4:4 subsampling; quality is lowered by 2 only when necessary, down to 84, to keep each final image under 2.8 MB. The six-image total must remain under 20 MB.
 
+Generating `final/06-template-tokens.jpg` requires the Host Project validation record at `.verification/fab-media/raw/all-tokens-validation.json`; the generator fails unless it proves the required interface, Gameplay Tags, actor tags, Data Layers, state, priority, exact Gameplay line, raw capture name, and completed visual check.
+
 Review outputs are:
 
 - `review/contact-sheet.jpg` — all six finals with filenames shown below each image.

@@ -16,6 +16,7 @@ REVIEW_ROOT = FAB_ROOT / "review"
 RAW_ROOT = REPO_ROOT / ".verification" / "fab-media" / "raw"
 LAYOUT_PATH = FAB_ROOT / "source" / "media-layout.json"
 SOURCE_HEAD_PATH = REPO_ROOT / ".verification" / "fab-media" / "source-head.txt"
+VALIDATION_PATH = RAW_ROOT / "all-tokens-validation.json"
 MAX_JPEG_BYTES = 2_800_000
 MAX_TOTAL_BYTES = 20_000_000
 
@@ -475,33 +476,59 @@ def parse_source_head() -> tuple[str, str]:
     return values["Plugin HEAD"], ".verification/fab-media/host/ActorMetadataOverlaySmoke.uproject"
 
 
+def validate_all_tokens_capture() -> None:
+    if not VALIDATION_PATH.is_file():
+        raise FileNotFoundError(f"Missing host validation JSON: {VALIDATION_PATH}")
+    with VALIDATION_PATH.open(encoding="utf-8") as stream:
+        validation = json.load(stream)
+    if validation.get("implementsGameplayTagAssetInterface") is not True:
+        raise ValueError("Host validation does not prove IGameplayTagAssetInterface")
+    if sorted(validation.get("ownedGameplayTags", [])) != ["Loot.Rare", "World.Interactable"]:
+        raise ValueError("Host validation Gameplay Tags do not match the required pair")
+    if sorted(validation.get("actorTags", [])) != ["Inspectable", "Loot"]:
+        raise ValueError("Host validation actor tags do not match the required pair")
+    if sorted(validation.get("dataLayers", [])) != ["Gameplay", "Night"]:
+        raise ValueError("Host validation Data Layers do not match the required pair")
+    if validation.get("state") != "Ready":
+        raise ValueError("Host validation state is not Ready")
+    if validation.get("priority") != 80:
+        raise ValueError("Host validation priority is not 80")
+    if validation.get("expectedGameplayLine") != "Gameplay: Loot.Rare, World.Interactable":
+        raise ValueError("Host validation Gameplay line is not exact")
+    if validation.get("visualCheck") is not True:
+        raise ValueError("Host validation visualCheck must be true after visual inspection")
+    if validation.get("rawCapture") != "all-tokens.png":
+        raise ValueError("Host validation rawCapture must be all-tokens.png")
+
+
 def write_manifest(finals: list[Path], source_head: str, capture_project: str) -> None:
     metadata = {item["filename"]: item for item in MEDIA}
     entries = []
     for final in finals:
         item = metadata[final.name]
         with Image.open(final) as opened:
-            entries.append(
-                {
-                    "order": item["order"],
-                    "filename": final.name,
-                    "role": item["role"],
-                    "title": item["title"].replace("\n", " "),
-                    "tagline": item["tagline"],
-                    "proof": item["proof"],
-                    "width": opened.width,
-                    "height": opened.height,
-                    "format": "JPEG",
-                    "mode": opened.mode,
-                    "sizeBytes": final.stat().st_size,
-                    "sha256": sha256(final),
-                    "sourceCaptures": [
-                        f".verification/fab-media/raw/{name}"
-                        for name in item.get("sources", [item.get("source")])
-                        if name
-                    ],
-                }
-            )
+            entry = {
+                "order": item["order"],
+                "filename": final.name,
+                "role": item["role"],
+                "title": item["title"].replace("\n", " "),
+                "tagline": item["tagline"],
+                "proof": item["proof"],
+                "width": opened.width,
+                "height": opened.height,
+                "format": "JPEG",
+                "mode": opened.mode,
+                "sizeBytes": final.stat().st_size,
+                "sha256": sha256(final),
+                "sourceCaptures": [
+                    f".verification/fab-media/raw/{name}"
+                    for name in item.get("sources", [item.get("source")])
+                    if name
+                ],
+            }
+            if item["order"] == 6:
+                entry["validationEvidence"] = ".verification/fab-media/raw/all-tokens-validation.json"
+            entries.append(entry)
     manifest = {
         "productName": "Actor Metadata Overlay",
         "productVersion": "2.0.0",
@@ -525,6 +552,7 @@ def write_manifest(finals: list[Path], source_head: str, capture_project: str) -
 
 def main() -> None:
     source_head, capture_project = parse_source_head()
+    validate_all_tokens_capture()
     required_sources = sorted(
         {
             name

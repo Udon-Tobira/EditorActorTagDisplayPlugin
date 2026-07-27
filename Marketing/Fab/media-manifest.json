@@ -7,8 +7,8 @@
   "canvasHeight": 1080,
   "accentColor": "#36C8FF",
   "backgroundColor": "#111318",
-  "generatedAtUtc": "2026-07-25T05:39:15Z",
-  "sourcePluginHead": "72d8ea6780b2c97ccaf1a1c8aaf4825f26e6bc22",
+  "generatedAtUtc": "2026-07-27T05:26:35Z",
+  "sourcePluginHead": "aca53073e2b5140b344cb9373e3ac1a69f5d712f",
   "captureProject": ".verification/fab-media/host/ActorMetadataOverlaySmoke.uproject",
   "captureEngine": "Unreal Engine 5.8 Level Editor viewport",
   "files": [
@@ -109,11 +109,12 @@
       "height": 1080,
       "format": "JPEG",
       "mode": "RGB",
-      "sizeBytes": 272405,
-      "sha256": "498745b37200a2503d0749e06dfae5ffee1ceda4392b219e18768c90089284b4",
+      "sizeBytes": 268301,
+      "sha256": "88d819b4d18f084362808626e45955e0d39a9f5e4e43f5e9d5a4433627e40058",
       "sourceCaptures": [
         ".verification/fab-media/raw/all-tokens.png"
-      ]
+      ],
+      "validationEvidence": ".verification/fab-media/raw/all-tokens-validation.json"
     }
   ]
 }
