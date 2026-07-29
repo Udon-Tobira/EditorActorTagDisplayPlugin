@@ -29,14 +29,13 @@ MEDIA = [
         "order": 1,
         "filename": "01-actor-metadata-overlay-hero.jpg",
         "role": "thumbnail",
-        "layout": "B",
+        "layout": "Hero",
         "source": "hero-all.png",
-        "displaySource": "readable/hero-all.png",
-        "displayCrop": "readableFull",
-        "crop": "viewport",
+        "crop": "heroTight",
+        "displayCrop": "heroTight",
         "title": "ACTOR METADATA\nOVERLAY",
-        "tagline": "See the data. Stay in the viewport.",
-        "proof": "RULE-BASED EDITOR OVERLAYS",
+        "tagline": "ACTOR DATA IN THE VIEWPORT",
+        "proof": "",
     },
     {
         "order": 2,
@@ -258,11 +257,13 @@ def draw_tagline(
     tagline: str,
     box: tuple[int, int, int, int],
     start_y: int,
+    size_name: str = "tagline",
+    max_lines: int = 2,
 ) -> int:
     x, _, width, _ = box
-    used_font = font("regular", "tagline")
-    lines = wrap_text(draw, tagline, used_font, width, 2)
-    line_height = SIZES["tagline"] + 8
+    used_font = font("regular", size_name)
+    lines = wrap_text(draw, tagline, used_font, width, max_lines)
+    line_height = SIZES[size_name] + 8
     for index, line in enumerate(lines):
         draw.text(
             (x, start_y + index * line_height),
@@ -378,6 +379,31 @@ def layout_b(spec: dict, screenshot: Image.Image) -> Image.Image:
     draw_tagline(draw, spec["tagline"], text_box, text_end + 30)
     draw_proof(draw, spec["proof"], text_box[0], LAYOUT["layouts"]["B"]["proofY"], text_box[2], color("accent"))
     draw_brand_disclaimer(draw)
+    return image
+
+
+def layout_hero(spec: dict, screenshot: Image.Image) -> Image.Image:
+    """Render the thumbnail-first Hero with only product title and one-line promise."""
+    image = base_canvas()
+    layout = LAYOUT["layouts"]["Hero"]
+    screenshot_card(image, screenshot, tuple(layout["screenshot"]), color("accent"))
+    draw = ImageDraw.Draw(image)
+    text_box = tuple(layout["text"])
+    text_end = draw_title(draw, spec["title"], text_box, "heroTitle")
+    draw_tagline(
+        draw,
+        spec["tagline"],
+        text_box,
+        text_end + layout["taglineGap"],
+        size_name="heroTagline",
+        max_lines=1,
+    )
+    line_y = text_end + layout["taglineGap"] + SIZES["heroTagline"] + 38
+    draw.rounded_rectangle(
+        (text_box[0], line_y, text_box[0] + layout["accentLineWidth"], line_y + layout["accentLineHeight"]),
+        radius=layout["accentLineHeight"] // 2,
+        fill=color("accent"),
+    )
     return image
 
 
@@ -666,7 +692,9 @@ def main() -> None:
                 spec.get("displayCrop", spec["crop"]),
                 spec.get("displaySource"),
             )
-            if spec["layout"] == "A":
+            if spec["layout"] == "Hero":
+                rendered = layout_hero(spec, screenshot)
+            elif spec["layout"] == "A":
                 rendered = layout_a(spec, screenshot)
             elif spec["layout"] == "B":
                 rendered = layout_b(spec, screenshot)

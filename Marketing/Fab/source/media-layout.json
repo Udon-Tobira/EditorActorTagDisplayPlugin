@@ -22,6 +22,7 @@
   },
   "fontSizes": {
     "heroTitle": 88,
+    "heroTagline": 46,
     "galleryTitle": 64,
     "tagline": 30,
     "proof": 22,
@@ -51,6 +52,13 @@
       "proofY": 748,
       "gradient": [0, 0, 1120, 1020]
     },
+    "Hero": {
+      "text": [60, 300, 820, 500],
+      "screenshot": [900, 130, 920, 820],
+      "taglineGap": 42,
+      "accentLineWidth": 128,
+      "accentLineHeight": 8
+    },
     "C": {
       "text": [96, 84, 1728, 170],
       "before": [96, 300, 840, 610],
@@ -70,6 +78,9 @@
     },
     "readableFull": {
       "crop": [0, 0, 1920, 1000]
+    },
+    "heroTight": {
+      "crop": [600, 560, 1250, 1200]
     },
     "readableSelected": {
       "crop": [0, 0, 1300, 1000]
