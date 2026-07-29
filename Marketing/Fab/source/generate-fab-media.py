@@ -1,12 +1,13 @@
 from __future__ import annotations
 
+import argparse
 import hashlib
 import json
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Iterable
 
-from PIL import Image, ImageColor, ImageDraw, ImageFont
+from PIL import Image, ImageColor, ImageDraw, ImageEnhance, ImageFont
 
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -29,12 +30,11 @@ MEDIA = [
         "order": 1,
         "filename": "01-actor-metadata-overlay-hero.jpg",
         "role": "thumbnail",
-        "layout": "Hero",
+        "layout": "HeroFullBleed",
         "source": "hero-all.png",
-        "crop": "heroTight",
-        "displayCrop": "heroTight",
+        "crop": "heroFullBleedC",
         "title": "ACTOR METADATA\nOVERLAY",
-        "tagline": "ACTOR DATA IN THE VIEWPORT",
+        "tagline": "",
         "proof": "",
     },
     {
@@ -407,6 +407,73 @@ def layout_hero(spec: dict, screenshot: Image.Image) -> Image.Image:
     return image
 
 
+def draw_horizontally_fitted_title(
+    image: Image.Image,
+    text: str,
+    position: tuple[int, int],
+    max_width: int,
+) -> None:
+    used_font = font("bold", "heroTitle")
+    left, top, right, bottom = used_font.getbbox(text)
+    text_layer = Image.new("RGBA", (right - left + 8, bottom - top + 8), (0, 0, 0, 0))
+    text_draw = ImageDraw.Draw(text_layer)
+    text_draw.text(
+        (4 - left, 4 - top),
+        text,
+        font=used_font,
+        fill=ImageColor.getrgb(LAYOUT["layouts"]["HeroFullBleed"]["titleColor"]) + (255,),
+    )
+    if text_layer.width > max_width:
+        text_layer = text_layer.resize((max_width, text_layer.height), Image.Resampling.LANCZOS)
+    image.paste(text_layer, position, text_layer)
+
+
+def layout_hero_full_bleed(spec: dict, screenshot: Image.Image) -> Image.Image:
+    """Render the approved single-capture, full-bleed thumbnail Hero."""
+    layout = LAYOUT["layouts"]["HeroFullBleed"]
+    if spec["tagline"] or spec["proof"]:
+        raise ValueError("HeroFullBleed does not allow tagline or proof text")
+    title_lines = spec["title"].splitlines()
+    if len(title_lines) != 2:
+        raise ValueError("HeroFullBleed requires exactly two title lines")
+
+    left_width = layout["leftWidth"]
+    right_width = layout["rightWidth"]
+    if left_width + right_width != CANVAS_SIZE[0]:
+        raise ValueError("HeroFullBleed regions must fill the canvas width")
+
+    image = Image.new("RGB", CANVAS_SIZE, (0, 0, 0))
+    pixels = image.load()
+    gradient = layout["gradient"]
+    for y in range(CANVAS_SIZE[1]):
+        vertical = y / (CANVAS_SIZE[1] - 1)
+        for x in range(left_width):
+            horizontal = x / (left_width - 1)
+            pixels[x, y] = tuple(
+                int(
+                    gradient["base"][channel]
+                    + gradient["horizontal"][channel] * horizontal
+                    + gradient["vertical"][channel] * vertical
+                )
+                for channel in range(3)
+            )
+
+    adjusted_capture = ImageEnhance.Contrast(screenshot).enhance(layout["contrast"])
+    image.paste(fit_cover(adjusted_capture, (right_width, CANVAS_SIZE[1])), (left_width, 0))
+
+    draw = ImageDraw.Draw(image)
+    draw.rectangle(tuple(layout["dividerBox"]), fill=layout["accentColor"])
+    for title_line, position in zip(title_lines, layout["titlePositions"]):
+        draw_horizontally_fitted_title(
+            image,
+            title_line,
+            tuple(position),
+            layout["titleMaxWidth"],
+        )
+    draw.rectangle(tuple(layout["accentLine"]), fill=layout["accentColor"])
+    return image
+
+
 def layout_c(spec: dict, before: Image.Image, after: Image.Image) -> Image.Image:
     image = base_canvas()
     draw = ImageDraw.Draw(image)
@@ -459,33 +526,46 @@ def sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
-def save_jpeg(image: Image.Image, path: Path) -> None:
+def save_jpeg(
+    image: Image.Image,
+    path: Path,
+    quality: int = 92,
+    optimize: bool = True,
+) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    quality = 92
+    current_quality = quality
     while True:
         image.convert("RGB").save(
             path,
             format="JPEG",
-            quality=quality,
-            optimize=True,
+            quality=current_quality,
+            optimize=optimize,
             subsampling=0,
         )
         if path.stat().st_size <= MAX_JPEG_BYTES:
             return
-        if quality <= 84:
+        if current_quality <= 84:
             raise RuntimeError(f"JPEG remains above 2.8 MB at quality 84: {path}")
-        quality -= 2
+        current_quality -= 2
 
 
-def make_review_outputs(finals: list[Path]) -> None:
+def make_review_outputs(finals: list[Path], hero_preview: Image.Image | None = None) -> None:
     preview_size = (LAYOUT["previews"]["width"], LAYOUT["previews"]["height"])
     REVIEW_ROOT.mkdir(parents=True, exist_ok=True)
     previews: list[tuple[Path, Image.Image]] = []
-    for final in finals:
+    for index, final in enumerate(finals):
+        if index == 0 and hero_preview is not None:
+            previews.append((final, hero_preview.convert("RGB").resize(preview_size, Image.Resampling.LANCZOS)))
+            continue
         with Image.open(final) as source:
             previews.append((final, source.convert("RGB").resize(preview_size, Image.Resampling.LANCZOS)))
 
-    save_jpeg(previews[0][1], REVIEW_ROOT / "thumbnail-preview-320x180.jpg")
+    save_jpeg(
+        previews[0][1],
+        REVIEW_ROOT / "thumbnail-preview-320x180.jpg",
+        quality=95 if hero_preview is not None else 92,
+        optimize=False if hero_preview is not None else True,
+    )
     gallery = Image.new("RGB", (preview_size[0] * 3, preview_size[1] * 2), color("background"))
     for index, (_, preview) in enumerate(previews):
         gallery.paste(preview, ((index % 3) * preview_size[0], (index // 3) * preview_size[1]))
@@ -645,13 +725,23 @@ def write_manifest(finals: list[Path], source_head: str, capture_project: str) -
         "captureEngine": "Unreal Engine 5.8 Level Editor viewport",
         "files": entries,
     }
-    (FAB_ROOT / "media-manifest.json").write_text(
-        json.dumps(manifest, indent=2) + "\n",
-        encoding="utf-8",
+    (FAB_ROOT / "media-manifest.json").write_bytes(
+        (json.dumps(manifest, indent=2) + "\n").encode("utf-8")
     )
 
 
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Generate Actor Metadata Overlay Fab media.")
+    parser.add_argument(
+        "--hero-only",
+        action="store_true",
+        help="Regenerate only the approved Hero and refresh review/manifest outputs without rewriting gallery finals.",
+    )
+    return parser.parse_args()
+
+
 def main() -> None:
+    args = parse_args()
     source_head, capture_project = parse_source_head()
     validate_all_tokens_capture()
     validate_preview_check()
@@ -681,30 +771,56 @@ def main() -> None:
     if unexpected_existing:
         raise RuntimeError(f"final/ contains unexpected files before generation: {unexpected_existing}")
 
-    for spec in MEDIA:
-        if spec["layout"] == "C":
-            before = load_source(spec["sources"][0], spec["displayCrops"][0], spec["displaySources"][0])
-            after = load_source(spec["sources"][1], spec["displayCrops"][1], spec["displaySources"][1])
-            rendered = layout_c(spec, before, after)
-        else:
-            screenshot = load_source(
-                spec["source"],
-                spec.get("displayCrop", spec["crop"]),
-                spec.get("displaySource"),
-            )
-            if spec["layout"] == "Hero":
-                rendered = layout_hero(spec, screenshot)
-            elif spec["layout"] == "A":
-                rendered = layout_a(spec, screenshot)
-            elif spec["layout"] == "B":
-                rendered = layout_b(spec, screenshot)
-            elif spec["layout"] == "AToken":
-                rendered = layout_a_tokens(spec, screenshot)
-            else:
-                raise ValueError(f"Unknown layout: {spec['layout']}")
-        save_jpeg(rendered, FINAL_ROOT / spec["filename"])
-
     finals = [FINAL_ROOT / item["filename"] for item in MEDIA]
+    preserved_gallery_hashes = {
+        final.name: sha256(final)
+        for final in finals[1:]
+        if final.is_file()
+    }
+    hero_preview: Image.Image | None = None
+
+    if args.hero_only:
+        hero_spec = MEDIA[0]
+        screenshot = load_source(hero_spec["source"], hero_spec["crop"])
+        rendered = layout_hero_full_bleed(hero_spec, screenshot)
+        hero_preview = rendered.copy()
+        save_jpeg(
+            rendered,
+            FINAL_ROOT / hero_spec["filename"],
+            quality=95,
+            optimize=False,
+        )
+        for final in finals[1:]:
+            if not final.is_file():
+                raise FileNotFoundError(f"Hero-only mode requires existing gallery final: {final}")
+            if sha256(final) != preserved_gallery_hashes.get(final.name):
+                raise RuntimeError(f"Hero-only mode changed a gallery final: {final}")
+    else:
+        for spec in MEDIA:
+            if spec["layout"] == "C":
+                before = load_source(spec["sources"][0], spec["displayCrops"][0], spec["displaySources"][0])
+                after = load_source(spec["sources"][1], spec["displayCrops"][1], spec["displaySources"][1])
+                rendered = layout_c(spec, before, after)
+            else:
+                screenshot = load_source(
+                    spec["source"],
+                    spec.get("displayCrop", spec["crop"]),
+                    spec.get("displaySource"),
+                )
+                if spec["layout"] == "HeroFullBleed":
+                    rendered = layout_hero_full_bleed(spec, screenshot)
+                elif spec["layout"] == "Hero":
+                    rendered = layout_hero(spec, screenshot)
+                elif spec["layout"] == "A":
+                    rendered = layout_a(spec, screenshot)
+                elif spec["layout"] == "B":
+                    rendered = layout_b(spec, screenshot)
+                elif spec["layout"] == "AToken":
+                    rendered = layout_a_tokens(spec, screenshot)
+                else:
+                    raise ValueError(f"Unknown layout: {spec['layout']}")
+            save_jpeg(rendered, FINAL_ROOT / spec["filename"])
+
     actual_final_names = sorted(path.name for path in FINAL_ROOT.glob("*.jpg"))
     expected_final_names = sorted(expected_final_names)
     if actual_final_names != expected_final_names:
@@ -712,9 +828,18 @@ def main() -> None:
     total_bytes = sum(path.stat().st_size for path in finals)
     if total_bytes >= MAX_TOTAL_BYTES:
         raise RuntimeError(f"Final image total is >= 20 MB: {total_bytes}")
-    make_review_outputs(finals)
+    make_review_outputs(finals, hero_preview)
     write_manifest(finals, source_head, capture_project)
-    print(json.dumps({"finals": [path.name for path in finals], "totalBytes": total_bytes}, indent=2))
+    print(
+        json.dumps(
+            {
+                "mode": "hero-only" if args.hero_only else "full",
+                "finals": [path.name for path in finals],
+                "totalBytes": total_bytes,
+            },
+            indent=2,
+        )
+    )
 
 
 if __name__ == "__main__":

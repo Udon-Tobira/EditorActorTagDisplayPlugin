@@ -7,7 +7,7 @@
   "canvasHeight": 1080,
   "accentColor": "#36C8FF",
   "backgroundColor": "#111318",
-  "generatedAtUtc": "2026-07-29T01:28:01Z",
+  "generatedAtUtc": "2026-07-29T06:19:36Z",
   "sourcePluginHead": "936052aea6285a02906862c97405c2307dda6136",
   "captureProject": ".verification/fab-media-v4/host/HostProject/DeepWaterStationHost.uproject",
   "captureEngine": "Unreal Engine 5.8 Level Editor viewport",
@@ -17,14 +17,14 @@
       "filename": "01-actor-metadata-overlay-hero.jpg",
       "role": "thumbnail",
       "title": "ACTOR METADATA OVERLAY",
-      "tagline": "ACTOR DATA IN THE VIEWPORT",
+      "tagline": "",
       "proof": "",
       "width": 1920,
       "height": 1080,
       "format": "JPEG",
       "mode": "RGB",
-      "sizeBytes": 219229,
-      "sha256": "46ceaa6c8a669d3ee47c58066b59f90d6ad82847b6a8c3716c5036db2722b220",
+      "sizeBytes": 353891,
+      "sha256": "27faada2fb99dd5dd73592bf60b8408963a9fe4824a7e289fca53bee897a17f8",
       "sourceCaptures": [
         ".verification/fab-media-v4/raw/hero-all.png"
       ]

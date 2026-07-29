@@ -21,7 +21,7 @@
     "mono": "C:/Windows/Fonts/consola.ttf"
   },
   "fontSizes": {
-    "heroTitle": 88,
+    "heroTitle": 92,
     "heroTagline": 46,
     "galleryTitle": 64,
     "tagline": 30,
@@ -59,6 +59,22 @@
       "accentLineWidth": 128,
       "accentLineHeight": 8
     },
+    "HeroFullBleed": {
+      "leftWidth": 800,
+      "rightWidth": 1120,
+      "dividerBox": [800, 0, 803, 1080],
+      "titlePositions": [[70, 342], [70, 458]],
+      "titleMaxWidth": 680,
+      "accentLine": [70, 612, 200, 620],
+      "contrast": 1.04,
+      "gradient": {
+        "base": [12, 17, 27],
+        "horizontal": [8, 13, 24],
+        "vertical": [5, 10, 20]
+      },
+      "titleColor": "#F8FBFF",
+      "accentColor": "#36EEEB"
+    },
     "C": {
       "text": [96, 84, 1728, 170],
       "before": [96, 300, 840, 610],
@@ -81,6 +97,9 @@
     },
     "heroTight": {
       "crop": [600, 560, 1250, 1200]
+    },
+    "heroFullBleedC": {
+      "crop": [700, 600, 1300, 1250]
     },
     "readableSelected": {
       "crop": [0, 0, 1300, 1000]
