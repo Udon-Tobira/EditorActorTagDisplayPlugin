@@ -31,6 +31,10 @@ Download the ZIP for your Unreal Engine version from Fab and place the single `E
 
 Copy the `EditorActorTagDisplay` plugin folder into `<YourProject>/Plugins/`. Open the project, enable **Actor Metadata Overlay**, and restart the editor.
 
+## Public sample project
+
+The free [Actor Metadata Overlay Sample](https://github.com/metyatech/ActorMetadataOverlaySample) contains a UE 5.6 source-of-truth demo map, fixture actors, Gameplay Tags, Data Layers, and automation coverage for validating the plugin without redistributing the paid plugin package.
+
 ## Quick Start
 
 1. Open **Project Settings > Plugins > Actor Metadata Overlay**.

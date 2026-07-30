@@ -2,6 +2,8 @@
 
 This guide takes about five minutes in a new Unreal Editor project.
 
+For a ready-to-run public validation project, see the [Actor Metadata Overlay Sample](https://github.com/metyatech/ActorMetadataOverlaySample). Its overview map is `/Game/ActorMetadataOverlayDemo/Maps/ActorMetadataOverlayOverview`.
+
 1. Copy the `EditorActorTagDisplay` folder into the project's `Plugins` folder.
 2. Enable **Actor Metadata Overlay** from **Edit > Plugins**.
 3. Restart the editor.

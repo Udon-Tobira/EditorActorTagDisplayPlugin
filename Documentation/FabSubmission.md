@@ -26,6 +26,8 @@ Rules choose actors by class and Actor Tags, then render a configurable template
 
 The product is Editor only and supports Win64. It is a viewport metadata display tool, not an Actor Tags editing tool: it does not add, remove, or edit Actor Tags, and it does not add Outliner columns or a search interface.
 
+For a free public demonstration and validation project, link to the [Actor Metadata Overlay Sample](https://github.com/metyatech/ActorMetadataOverlaySample). The sample provides the UE 5.6 overview map and fixture plugin while keeping the paid plugin package separate.
+
 ## Media checklist
 
 Prepare at least these six screenshots:
