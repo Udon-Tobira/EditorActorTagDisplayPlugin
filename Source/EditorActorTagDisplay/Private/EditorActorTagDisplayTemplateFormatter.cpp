@@ -9,6 +9,8 @@
 #include "UObject/EnumProperty.h"
 #include "UObject/SoftObjectPtr.h"
 #include "UObject/UnrealType.h"
+#include "WorldPartition/DataLayer/DataLayerAsset.h"
+#include "WorldPartition/DataLayer/DataLayerInstance.h"
 
 namespace
 {
@@ -18,6 +20,91 @@ namespace
         {
             return FCString::Stricmp(*Left, *Right) < 0;
         });
+    }
+
+    void SortDataLayerNames(TArray<FString>& Values)
+    {
+        Values.Sort([](const FString& Left, const FString& Right)
+        {
+            const int32 IgnoreCaseComparison = FCString::Stricmp(*Left, *Right);
+            return IgnoreCaseComparison != 0
+                       ? IgnoreCaseComparison < 0
+                       : FCString::Strcmp(*Left, *Right) < 0;
+        });
+    }
+
+    bool ContainsGeneratedDataLayerName(const FString& Value)
+    {
+        constexpr int32 PrefixLength = 10;
+        constexpr int32 GuidLength = 32;
+        const FString Prefix(TEXT("DataLayer_"));
+        int32 SearchStart = 0;
+        while (SearchStart < Value.Len())
+        {
+            const int32 PrefixIndex = Value.Find(
+                Prefix, ESearchCase::CaseSensitive, ESearchDir::FromStart, SearchStart);
+            if (PrefixIndex == INDEX_NONE)
+            {
+                return false;
+            }
+
+            const int32 GuidStart = PrefixIndex + PrefixLength;
+            const int32 GuidEnd = GuidStart + GuidLength;
+            if (GuidEnd <= Value.Len())
+            {
+                bool bAllHexDigits = true;
+                for (int32 Index = GuidStart; Index < GuidEnd; ++Index)
+                {
+                    if (!FChar::IsHexDigit(Value[Index]))
+                    {
+                        bAllHexDigits = false;
+                        break;
+                    }
+                }
+
+                const bool bEndsAtBoundary = GuidEnd == Value.Len() ||
+                                             !FChar::IsAlnum(Value[GuidEnd]);
+                if (bAllHexDigits && bEndsAtBoundary)
+                {
+                    return true;
+                }
+            }
+
+            SearchStart = PrefixIndex + PrefixLength;
+        }
+
+        return false;
+    }
+
+    bool IsUsableDataLayerDisplayName(const FString& Value)
+    {
+        return !Value.IsEmpty() &&
+               Value != TEXT("Invalid Data Layer") &&
+               !ContainsGeneratedDataLayerName(Value);
+    }
+
+    FString GetDataLayerDisplayName(const UDataLayerInstance& DataLayerInstance)
+    {
+        if (const UDataLayerAsset* DataLayerAsset = DataLayerInstance.GetAsset())
+        {
+            FString AssetName = DataLayerAsset->GetName();
+            AssetName.TrimStartAndEndInline();
+            if (IsUsableDataLayerDisplayName(AssetName))
+            {
+                return AssetName;
+            }
+        }
+
+        FString ShortName = DataLayerInstance.GetDataLayerShortName();
+        ShortName.TrimStartAndEndInline();
+        if (IsUsableDataLayerDisplayName(ShortName))
+        {
+            return ShortName;
+        }
+
+        FString FullName = DataLayerInstance.GetDataLayerFullName();
+        FullName.TrimStartAndEndInline();
+        return IsUsableDataLayerDisplayName(FullName) ? FullName : FString();
     }
 
     FString JoinActorTags(const AActor& Actor)
@@ -55,11 +142,35 @@ namespace
     FString JoinDataLayers(const AActor& Actor)
     {
         TArray<FString> Values;
-        for (const FName& LayerName : Actor.GetDataLayerInstanceNames())
+        for (const UDataLayerInstance* DataLayerInstance : Actor.GetDataLayerInstances())
         {
-            Values.Add(LayerName.ToString());
+            if (DataLayerInstance == nullptr)
+            {
+                continue;
+            }
+
+            FString DisplayName = GetDataLayerDisplayName(*DataLayerInstance);
+            if (DisplayName.IsEmpty())
+            {
+                continue;
+            }
+
+            FString* ExistingValue = Values.FindByPredicate([&DisplayName](const FString& Value)
+            {
+                return Value.Equals(DisplayName, ESearchCase::IgnoreCase);
+            });
+            if (ExistingValue != nullptr)
+            {
+                if (FCString::Strcmp(*DisplayName, **ExistingValue) < 0)
+                {
+                    *ExistingValue = MoveTemp(DisplayName);
+                }
+                continue;
+            }
+
+            Values.Add(MoveTemp(DisplayName));
         }
-        SortCaseInsensitive(Values);
+        SortDataLayerNames(Values);
         return FString::Join(Values, TEXT(", "));
     }
 

@@ -7,11 +7,17 @@
 #include "EditorActorTagDisplayRuleMatcher.h"
 #include "EditorActorTagDisplaySettings.h"
 #include "EditorActorTagDisplayTemplateFormatter.h"
+#include "Editor.h"
+#include "Editor/EditorEngine.h"
 #include "Engine/World.h"
 #include "GameFramework/Actor.h"
 #include "GameplayTagContainer.h"
 #include "Tests/AutomationEditorCommon.h"
 #include "Misc/AutomationTest.h"
+#include "WorldPartition/DataLayer/DataLayerAsset.h"
+#include "WorldPartition/DataLayer/DataLayerInstance.h"
+#include "WorldPartition/DataLayer/DataLayerInstanceWithAsset.h"
+#include "WorldPartition/DataLayer/WorldDataLayers.h"
 
 namespace
 {
@@ -131,6 +137,88 @@ bool FEditorActorTagDisplayFixedTemplateTokensTest::RunTest(const FString& Param
     TestEqual(TEXT("Fixed tokens render the complete editor-world output"), Output, Expected);
 
     EditorWorld->DestroyActor(Actor);
+    return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FEditorActorTagDisplayDataLayerFormattingTest,
+                                 "EditorActorTagDisplay.DataLayerFormatting",
+                                 EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+bool FEditorActorTagDisplayDataLayerFormattingTest::RunTest(const FString& Parameters)
+{
+    GEditor->CreateNewMapForEditing(false, true);
+    UWorld* EditorWorld = GEditor->GetEditorWorldContext().World();
+    if (!TestNotNull(TEXT("Create a temporary editor world"), EditorWorld) ||
+        !TestTrue(TEXT("The temporary editor world uses World Partition"), EditorWorld->IsPartitionedWorld()))
+    {
+        return false;
+    }
+
+    UDataLayerAsset* GameplayAsset = NewObject<UDataLayerAsset>(
+        CreatePackage(TEXT("/Temp/EditorActorTagDisplayTests/Gameplay")), TEXT("Gameplay"), RF_Transient);
+    UDataLayerAsset* NightAsset = NewObject<UDataLayerAsset>(
+        CreatePackage(TEXT("/Temp/EditorActorTagDisplayTests/Night")), TEXT("Night"), RF_Transient);
+    if (!TestNotNull(TEXT("Create the Gameplay Data Layer asset"), GameplayAsset) ||
+        !TestNotNull(TEXT("Create the Night Data Layer asset"), NightAsset))
+    {
+        return false;
+    }
+
+    GameplayAsset->SetType(EDataLayerType::Editor);
+    NightAsset->SetType(EDataLayerType::Editor);
+    GameplayAsset->OnCreated();
+    NightAsset->OnCreated();
+
+    AWorldDataLayers* WorldDataLayers = EditorWorld->GetWorldDataLayers();
+    if (!TestNotNull(TEXT("Get the World Partition Data Layers actor"), WorldDataLayers))
+    {
+        return false;
+    }
+
+    UDataLayerInstance* GameplayInstance =
+        WorldDataLayers->CreateDataLayer<UDataLayerInstanceWithAsset>(GameplayAsset);
+    UDataLayerInstance* NightInstance =
+        WorldDataLayers->CreateDataLayer<UDataLayerInstanceWithAsset>(NightAsset);
+    if (!TestNotNull(TEXT("Create the Gameplay Data Layer instance"), GameplayInstance) ||
+        !TestNotNull(TEXT("Create the Night Data Layer instance"), NightInstance))
+    {
+        return false;
+    }
+
+    AEditorActorTagDisplayTestActor* LayeredActor = EditorWorld->SpawnActor<AEditorActorTagDisplayTestActor>();
+    AEditorActorTagDisplayTestActor* UnlayeredActor = EditorWorld->SpawnActor<AEditorActorTagDisplayTestActor>();
+    if (!TestNotNull(TEXT("Spawn the layered test actor"), LayeredActor) ||
+        !TestNotNull(TEXT("Spawn the unlayered test actor"), UnlayeredActor))
+    {
+        return false;
+    }
+
+    LayeredActor->SetPackageExternal(true, false);
+    UnlayeredActor->SetPackageExternal(true, false);
+    if (!TestTrue(TEXT("The layered actor uses an external actor package"), LayeredActor->IsPackageExternal()) ||
+        !TestTrue(TEXT("The unlayered actor uses an external actor package"), UnlayeredActor->IsPackageExternal()))
+    {
+        return false;
+    }
+
+    TestTrue(TEXT("Assign Night before Gameplay to exercise stable sorting"),
+             LayeredActor->AddDataLayer(NightInstance));
+    TestTrue(TEXT("Assign Gameplay after Night"),
+             LayeredActor->AddDataLayer(GameplayInstance));
+    LayeredActor->AddDataLayer(GameplayInstance);
+
+    TSet<FString> Warnings;
+    const FString LayeredOutput = FEditorActorTagDisplayTemplateFormatter::Format(
+        *LayeredActor, TEXT("{DataLayers}"), 120, Warnings);
+    TestEqual(TEXT("Data Layers use sorted, deduplicated asset names"), LayeredOutput, FString(TEXT("Gameplay, Night")));
+    TestFalse(TEXT("Data Layers never expose generated internal identifiers"), LayeredOutput.Contains(TEXT("DataLayer_")));
+
+    const FString UnlayeredOutput = FEditorActorTagDisplayTemplateFormatter::Format(
+        *UnlayeredActor, TEXT("{DataLayers}"), 120, Warnings);
+    TestTrue(TEXT("An actor without Data Layers formats as an empty string"), UnlayeredOutput.IsEmpty());
+
+    EditorWorld->DestroyActor(LayeredActor);
+    EditorWorld->DestroyActor(UnlayeredActor);
     return true;
 }
 
