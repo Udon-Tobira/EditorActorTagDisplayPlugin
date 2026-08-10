@@ -1,4 +1,4 @@
-// Copyright 2026 Udon-Tobira. All Rights Reserved.
+// Copyright (c) 2026 metyatech. All rights reserved.
 
 #include "EditorActorTagDisplayLog.h"
 

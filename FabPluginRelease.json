@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "pluginName": "EditorActorTagDisplay",
+  "descriptorFile": "EditorActorTagDisplay.uplugin",
+  "engineVersions": [
+    "5.6",
+    "5.7",
+    "5.8"
+  ],
+  "platforms": [
+    "Win64"
+  ],
+  "distributionModules": [
+    "EditorActorTagDisplay"
+  ],
+  "enabledPluginDependencies": [],
+  "publisher": {
+    "name": "metyatech",
+    "url": "https://github.com/metyatech",
+    "copyrightNotice": "// Copyright (c) 2026 metyatech. All rights reserved."
+  },
+  "listingId": null,
+  "documentationUrl": "https://metyatech.github.io/unreal-plugin-docs/editor-actor-tag-display/",
+  "supportUrl": "https://github.com/metyatech/EditorActorTagDisplayPlugin/issues",
+  "content": {
+    "mode": "pack",
+    "packFolder": "EditorActorTagDisplay"
+  },
+  "includeDirectories": [
+    "Config",
+    "Content",
+    "Resources",
+    "Source/EditorActorTagDisplay/Public",
+    "Documentation"
+  ],
+  "includeFiles": [
+    "EditorActorTagDisplay.uplugin",
+    "Source/EditorActorTagDisplay/EditorActorTagDisplay.Build.cs",
+    "Source/EditorActorTagDisplay/Private/EditorActorTagDisplayController.cpp",
+    "Source/EditorActorTagDisplay/Private/EditorActorTagDisplayController.h",
+    "Source/EditorActorTagDisplay/Private/EditorActorTagDisplayLog.cpp",
+    "Source/EditorActorTagDisplay/Private/EditorActorTagDisplayModule.cpp",
+    "Source/EditorActorTagDisplay/Private/EditorActorTagDisplayRuleMatcher.cpp",
+    "Source/EditorActorTagDisplay/Private/EditorActorTagDisplayRuleMatcher.h",
+    "Source/EditorActorTagDisplay/Private/EditorActorTagDisplaySettings.cpp",
+    "Source/EditorActorTagDisplay/Private/EditorActorTagDisplayTemplateFormatter.cpp",
+    "Source/EditorActorTagDisplay/Private/EditorActorTagDisplayTemplateFormatter.h",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "requiredPackageFiles": [
+    "EditorActorTagDisplay.uplugin",
+    "Config/FilterPlugin.ini",
+    "Resources/Icon128.png",
+    "Source/EditorActorTagDisplay/EditorActorTagDisplay.Build.cs",
+    "Source/EditorActorTagDisplay/Private/EditorActorTagDisplayModule.cpp",
+    "Documentation/QuickStart.md",
+    "Documentation/SettingsReference.md",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "customDistributionPaths": [
+    "Documentation",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "thirdPartyLicenseSets": [],
+  "forbiddenPackagePatterns": [
+    "^Source/EditorActorTagDisplay/Private/Tests(?:/|$)",
+    "^Marketing(?:/|$)",
+    "^Fab(?:/|$)",
+    "^\\.verification(?:/|$)",
+    "^Content/EditorActorTagDisplay/\\.gitkeep$",
+    "(?:^|/)(?:generate-fab-media|PackageForFab|Invoke-FabPluginRelease)\\.(?:py|ps1)$",
+    "(?:^|/)(?:raw|review|verification|test-fixtures?)(?:/|$)"
+  ],
+  "buildLogFailPatterns": []
+}

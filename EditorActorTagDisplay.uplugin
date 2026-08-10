@@ -5,7 +5,7 @@
 	"FriendlyName": "Actor Metadata Overlay",
 	"Description": "Rule-based editor viewport overlays for actor labels, classes, Actor Tags, Gameplay Tags, folders, data layers, and selected properties.",
 	"Category": "Editor",
-	"CreatedBy": "Udon-Tobira",
+	"CreatedBy": "metyatech",
 	"CreatedByURL": "https://github.com/metyatech",
 	"DocsURL": "https://metyatech.github.io/unreal-plugin-docs/editor-actor-tag-display/",
 	"MarketplaceURL": "",
