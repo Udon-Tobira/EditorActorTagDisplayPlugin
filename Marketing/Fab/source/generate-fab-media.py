@@ -809,6 +809,7 @@ def main() -> None:
                 )
                 if spec["layout"] == "HeroFullBleed":
                     rendered = layout_hero_full_bleed(spec, screenshot)
+                    hero_preview = rendered.copy()
                 elif spec["layout"] == "Hero":
                     rendered = layout_hero(spec, screenshot)
                 elif spec["layout"] == "A":
@@ -819,7 +820,15 @@ def main() -> None:
                     rendered = layout_a_tokens(spec, screenshot)
                 else:
                     raise ValueError(f"Unknown layout: {spec['layout']}")
-            save_jpeg(rendered, FINAL_ROOT / spec["filename"])
+            if spec["layout"] == "HeroFullBleed":
+                save_jpeg(
+                    rendered,
+                    FINAL_ROOT / spec["filename"],
+                    quality=95,
+                    optimize=False,
+                )
+            else:
+                save_jpeg(rendered, FINAL_ROOT / spec["filename"])
 
     actual_final_names = sorted(path.name for path in FINAL_ROOT.glob("*.jpg"))
     expected_final_names = sorted(expected_final_names)
