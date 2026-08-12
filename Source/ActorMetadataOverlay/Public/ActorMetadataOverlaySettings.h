@@ -4,16 +4,16 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DeveloperSettings.h"
-#include "EditorActorTagDisplayTypes.h"
-#include "EditorActorTagDisplaySettings.generated.h"
+#include "ActorMetadataOverlayTypes.h"
+#include "ActorMetadataOverlaySettings.generated.h"
 
 UCLASS(config = Editor, defaultconfig, meta = (DisplayName = "Actor Metadata Overlay"))
-class EDITORACTORTAGDISPLAY_API UEditorActorTagDisplayProjectSettings : public UDeveloperSettings
+class ACTORMETADATAOVERLAY_API UActorMetadataOverlayProjectSettings : public UDeveloperSettings
 {
     GENERATED_BODY()
 
 public:
-    UEditorActorTagDisplayProjectSettings();
+    UActorMetadataOverlayProjectSettings();
 
     virtual FName GetContainerName() const override { return TEXT("Project"); }
     virtual FName GetCategoryName() const override { return TEXT("Plugins"); }
@@ -23,7 +23,7 @@ public:
     virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 #endif
 
-    static UEditorActorTagDisplayProjectSettings* Get();
+    static UActorMetadataOverlayProjectSettings* Get();
 
     UPROPERTY(config, EditAnywhere, Category = "Actor Metadata Overlay")
     TArray<FActorMetadataOverlayRule> Rules;
@@ -39,12 +39,12 @@ public:
 };
 
 UCLASS(config = EditorPerProjectUserSettings, meta = (DisplayName = "Actor Metadata Overlay"))
-class EDITORACTORTAGDISPLAY_API UEditorActorTagDisplayUserSettings : public UDeveloperSettings
+class ACTORMETADATAOVERLAY_API UActorMetadataOverlayUserSettings : public UDeveloperSettings
 {
     GENERATED_BODY()
 
 public:
-    UEditorActorTagDisplayUserSettings() = default;
+    UActorMetadataOverlayUserSettings() = default;
 
     virtual FName GetContainerName() const override { return TEXT("Editor"); }
     virtual FName GetCategoryName() const override { return TEXT("Plugins"); }
@@ -54,7 +54,7 @@ public:
     virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 #endif
 
-    static UEditorActorTagDisplayUserSettings* Get();
+    static UActorMetadataOverlayUserSettings* Get();
 
     UPROPERTY(config, EditAnywhere, Category = "Actor Metadata Overlay")
     EActorMetadataOverlayMode DisplayMode = EActorMetadataOverlayMode::Selected;

@@ -2,11 +2,11 @@
 
 #if WITH_DEV_AUTOMATION_TESTS
 
-#include "EditorActorTagDisplayTestActor.h"
+#include "ActorMetadataOverlayTestActor.h"
 
-#include "EditorActorTagDisplayRuleMatcher.h"
-#include "EditorActorTagDisplaySettings.h"
-#include "EditorActorTagDisplayTemplateFormatter.h"
+#include "ActorMetadataOverlayRuleMatcher.h"
+#include "ActorMetadataOverlaySettings.h"
+#include "ActorMetadataOverlayTemplateFormatter.h"
 #include "Editor.h"
 #include "Editor/EditorEngine.h"
 #include "Engine/World.h"
@@ -21,9 +21,9 @@
 
 namespace
 {
-    AEditorActorTagDisplayTestActor* MakeTestActor()
+    AActorMetadataOverlayTestActor* MakeTestActor()
     {
-        return NewObject<AEditorActorTagDisplayTestActor>(GetTransientPackage(), NAME_None, RF_Transient);
+        return NewObject<AActorMetadataOverlayTestActor>(GetTransientPackage(), NAME_None, RF_Transient);
     }
 
     FResolvedActorMetadataOverlayRule MakeRule(UClass* ActorClass)
@@ -39,24 +39,24 @@ namespace
     {
         TArray<FResolvedActorMetadataOverlayRule> Rules;
         Rules.Add(Rule);
-        return EditorActorTagDisplayRuleMatcher::FindMatchingRule(Actor, Rules);
+        return ActorMetadataOverlayRuleMatcher::FindMatchingRule(Actor, Rules);
     }
 }
 
-IMPLEMENT_SIMPLE_AUTOMATION_TEST(FEditorActorTagDisplayRuleMatchingTest,
-                                 "EditorActorTagDisplay.RuleMatching",
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FActorMetadataOverlayRuleMatchingTest,
+                                 "ActorMetadataOverlay.RuleMatching",
                                  EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
-bool FEditorActorTagDisplayRuleMatchingTest::RunTest(const FString& Parameters)
+bool FActorMetadataOverlayRuleMatchingTest::RunTest(const FString& Parameters)
 {
-    AEditorActorTagDisplayTestActor* Actor = MakeTestActor();
+    AActorMetadataOverlayTestActor* Actor = MakeTestActor();
     Actor->Tags = {FName(TEXT("Required")), FName(TEXT("Other"))};
 
-    FResolvedActorMetadataOverlayRule DisabledRule = MakeRule(AEditorActorTagDisplayTestActor::StaticClass());
+    FResolvedActorMetadataOverlayRule DisabledRule = MakeRule(AActorMetadataOverlayTestActor::StaticClass());
     DisabledRule.Rule.bEnabled = false;
     TestEqual(TEXT("Disabled only does not match"), FindWithSingleRule(*Actor, DisabledRule), INDEX_NONE);
 
-    FResolvedActorMetadataOverlayRule ExactClassRule = MakeRule(AEditorActorTagDisplayTestActor::StaticClass());
+    FResolvedActorMetadataOverlayRule ExactClassRule = MakeRule(AActorMetadataOverlayTestActor::StaticClass());
     ExactClassRule.Rule.bIncludeDerivedClasses = false;
     TestEqual(TEXT("Exact class matches the exact actor class"), FindWithSingleRule(*Actor, ExactClassRule), 0);
 
@@ -68,18 +68,18 @@ bool FEditorActorTagDisplayRuleMatchingTest::RunTest(const FString& Parameters)
     IncludeDerivedRule.Rule.bIncludeDerivedClasses = true;
     TestEqual(TEXT("Include derived accepts a derived actor"), FindWithSingleRule(*Actor, IncludeDerivedRule), 0);
 
-    FResolvedActorMetadataOverlayRule MissingRequiredTagRule = MakeRule(AEditorActorTagDisplayTestActor::StaticClass());
+    FResolvedActorMetadataOverlayRule MissingRequiredTagRule = MakeRule(AActorMetadataOverlayTestActor::StaticClass());
     MissingRequiredTagRule.Rule.RequiredActorTags = {FName(TEXT("Missing"))};
     TestEqual(TEXT("Missing required tag rejects the rule"), FindWithSingleRule(*Actor, MissingRequiredTagRule), INDEX_NONE);
 
-    FResolvedActorMetadataOverlayRule ExcludedTagRule = MakeRule(AEditorActorTagDisplayTestActor::StaticClass());
+    FResolvedActorMetadataOverlayRule ExcludedTagRule = MakeRule(AActorMetadataOverlayTestActor::StaticClass());
     ExcludedTagRule.Rule.ExcludedActorTags = {FName(TEXT("Other"))};
     TestEqual(TEXT("Present excluded tag rejects the rule"), FindWithSingleRule(*Actor, ExcludedTagRule), INDEX_NONE);
 
     TArray<FResolvedActorMetadataOverlayRule> TwoMatchingRules;
-    TwoMatchingRules.Add(MakeRule(AEditorActorTagDisplayTestActor::StaticClass()));
+    TwoMatchingRules.Add(MakeRule(AActorMetadataOverlayTestActor::StaticClass()));
     TwoMatchingRules.Add(MakeRule(AActor::StaticClass()));
-    TestEqual(TEXT("The first of two matching rules wins"), EditorActorTagDisplayRuleMatcher::FindMatchingRule(*Actor, TwoMatchingRules), 0);
+    TestEqual(TEXT("The first of two matching rules wins"), ActorMetadataOverlayRuleMatcher::FindMatchingRule(*Actor, TwoMatchingRules), 0);
 
     FResolvedActorMetadataOverlayRule NullClassRule = MakeRule(nullptr);
     NullClassRule.Rule.ActorClass.Reset();
@@ -88,11 +88,11 @@ bool FEditorActorTagDisplayRuleMatchingTest::RunTest(const FString& Parameters)
     return true;
 }
 
-IMPLEMENT_SIMPLE_AUTOMATION_TEST(FEditorActorTagDisplayFixedTemplateTokensTest,
-                                 "EditorActorTagDisplay.FixedTemplateTokens",
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FActorMetadataOverlayFixedTemplateTokensTest,
+                                 "ActorMetadataOverlay.FixedTemplateTokens",
                                  EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
-bool FEditorActorTagDisplayFixedTemplateTokensTest::RunTest(const FString& Parameters)
+bool FActorMetadataOverlayFixedTemplateTokensTest::RunTest(const FString& Parameters)
 {
     UWorld* EditorWorld = FAutomationEditorCommonUtils::CreateNewMap();
     if (!TestNotNull(TEXT("CreateNewMap returns an editor world"), EditorWorld))
@@ -103,8 +103,8 @@ bool FEditorActorTagDisplayFixedTemplateTokensTest::RunTest(const FString& Param
     FActorSpawnParameters SpawnParameters;
     SpawnParameters.Name = FName(TEXT("MetadataOverlayTestActor"));
     SpawnParameters.NameMode = FActorSpawnParameters::ESpawnActorNameMode::Required_ReturnNull;
-    AEditorActorTagDisplayTestActor* Actor = EditorWorld->SpawnActor<AEditorActorTagDisplayTestActor>(
-        AEditorActorTagDisplayTestActor::StaticClass(), FTransform::Identity, SpawnParameters);
+    AActorMetadataOverlayTestActor* Actor = EditorWorld->SpawnActor<AActorMetadataOverlayTestActor>(
+        AActorMetadataOverlayTestActor::StaticClass(), FTransform::Identity, SpawnParameters);
     if (!TestNotNull(TEXT("Spawn the metadata overlay test actor in the editor world"), Actor))
     {
         return false;
@@ -113,11 +113,11 @@ bool FEditorActorTagDisplayFixedTemplateTokensTest::RunTest(const FString& Param
     Actor->SetActorLabel(TEXT("Display Label"));
     Actor->Tags = {FName(TEXT("zeta")), FName(TEXT("Alpha"))};
     const FGameplayTag AlphaTag = FGameplayTag::RequestGameplayTag(
-        FName(TEXT("EditorActorTagDisplay.Test.Alpha")),
+        FName(TEXT("ActorMetadataOverlay.Test.Alpha")),
         false);
 
     const FGameplayTag ZetaTag = FGameplayTag::RequestGameplayTag(
-        FName(TEXT("EditorActorTagDisplay.Test.Zeta")),
+        FName(TEXT("ActorMetadataOverlay.Test.Zeta")),
         false);
 
     if (!TestTrue(TEXT("Alpha automation tag is loaded from the host project config"), AlphaTag.IsValid()) ||
@@ -132,19 +132,19 @@ bool FEditorActorTagDisplayFixedTemplateTokensTest::RunTest(const FString& Param
 
     TSet<FString> Warnings;
     const FString Template = TEXT("{ActorLabel}\n{ActorName}\n{ActorClass}\n{ActorTags}\n{GameplayTags}\n{Folder}\n{DataLayers}");
-    const FString Expected = TEXT("Display Label\nMetadataOverlayTestActor\nEditorActorTagDisplayTestActor\nAlpha, zeta\nEditorActorTagDisplay.Test.Alpha, EditorActorTagDisplay.Test.Zeta\nOverlayTests/Folder\n");
-    const FString Output = FEditorActorTagDisplayTemplateFormatter::Format(*Actor, Template, 120, Warnings);
+    const FString Expected = TEXT("Display Label\nMetadataOverlayTestActor\nActorMetadataOverlayTestActor\nAlpha, zeta\nActorMetadataOverlay.Test.Alpha, ActorMetadataOverlay.Test.Zeta\nOverlayTests/Folder\n");
+    const FString Output = FActorMetadataOverlayTemplateFormatter::Format(*Actor, Template, 120, Warnings);
     TestEqual(TEXT("Fixed tokens render the complete editor-world output"), Output, Expected);
 
     EditorWorld->DestroyActor(Actor);
     return true;
 }
 
-IMPLEMENT_SIMPLE_AUTOMATION_TEST(FEditorActorTagDisplayDataLayerFormattingTest,
-                                 "EditorActorTagDisplay.DataLayerFormatting",
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FActorMetadataOverlayDataLayerFormattingTest,
+                                 "ActorMetadataOverlay.DataLayerFormatting",
                                  EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
-bool FEditorActorTagDisplayDataLayerFormattingTest::RunTest(const FString& Parameters)
+bool FActorMetadataOverlayDataLayerFormattingTest::RunTest(const FString& Parameters)
 {
     GEditor->CreateNewMapForEditing(false, true);
     UWorld* EditorWorld = GEditor->GetEditorWorldContext().World();
@@ -155,9 +155,9 @@ bool FEditorActorTagDisplayDataLayerFormattingTest::RunTest(const FString& Param
     }
 
     UDataLayerAsset* GameplayAsset = NewObject<UDataLayerAsset>(
-        CreatePackage(TEXT("/Temp/EditorActorTagDisplayTests/Gameplay")), TEXT("Gameplay"), RF_Transient);
+        CreatePackage(TEXT("/Temp/ActorMetadataOverlayTests/Gameplay")), TEXT("Gameplay"), RF_Transient);
     UDataLayerAsset* NightAsset = NewObject<UDataLayerAsset>(
-        CreatePackage(TEXT("/Temp/EditorActorTagDisplayTests/Night")), TEXT("Night"), RF_Transient);
+        CreatePackage(TEXT("/Temp/ActorMetadataOverlayTests/Night")), TEXT("Night"), RF_Transient);
     if (!TestNotNull(TEXT("Create the Gameplay Data Layer asset"), GameplayAsset) ||
         !TestNotNull(TEXT("Create the Night Data Layer asset"), NightAsset))
     {
@@ -185,8 +185,8 @@ bool FEditorActorTagDisplayDataLayerFormattingTest::RunTest(const FString& Param
         return false;
     }
 
-    AEditorActorTagDisplayTestActor* LayeredActor = EditorWorld->SpawnActor<AEditorActorTagDisplayTestActor>();
-    AEditorActorTagDisplayTestActor* UnlayeredActor = EditorWorld->SpawnActor<AEditorActorTagDisplayTestActor>();
+    AActorMetadataOverlayTestActor* LayeredActor = EditorWorld->SpawnActor<AActorMetadataOverlayTestActor>();
+    AActorMetadataOverlayTestActor* UnlayeredActor = EditorWorld->SpawnActor<AActorMetadataOverlayTestActor>();
     if (!TestNotNull(TEXT("Spawn the layered test actor"), LayeredActor) ||
         !TestNotNull(TEXT("Spawn the unlayered test actor"), UnlayeredActor))
     {
@@ -208,12 +208,12 @@ bool FEditorActorTagDisplayDataLayerFormattingTest::RunTest(const FString& Param
     LayeredActor->AddDataLayer(GameplayInstance);
 
     TSet<FString> Warnings;
-    const FString LayeredOutput = FEditorActorTagDisplayTemplateFormatter::Format(
+    const FString LayeredOutput = FActorMetadataOverlayTemplateFormatter::Format(
         *LayeredActor, TEXT("{DataLayers}"), 120, Warnings);
     TestEqual(TEXT("Data Layers use sorted, deduplicated asset names"), LayeredOutput, FString(TEXT("Gameplay, Night")));
     TestFalse(TEXT("Data Layers never expose generated internal identifiers"), LayeredOutput.Contains(TEXT("DataLayer_")));
 
-    const FString UnlayeredOutput = FEditorActorTagDisplayTemplateFormatter::Format(
+    const FString UnlayeredOutput = FActorMetadataOverlayTemplateFormatter::Format(
         *UnlayeredActor, TEXT("{DataLayers}"), 120, Warnings);
     TestTrue(TEXT("An actor without Data Layers formats as an empty string"), UnlayeredOutput.IsEmpty());
 
@@ -222,28 +222,28 @@ bool FEditorActorTagDisplayDataLayerFormattingTest::RunTest(const FString& Param
     return true;
 }
 
-IMPLEMENT_SIMPLE_AUTOMATION_TEST(FEditorActorTagDisplayTemplateValidationTest,
-                                 "EditorActorTagDisplay.TemplateValidation",
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FActorMetadataOverlayTemplateValidationTest,
+                                 "ActorMetadataOverlay.TemplateValidation",
                                  EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
-bool FEditorActorTagDisplayTemplateValidationTest::RunTest(const FString& Parameters)
+bool FActorMetadataOverlayTemplateValidationTest::RunTest(const FString& Parameters)
 {
-    AEditorActorTagDisplayTestActor* Actor = MakeTestActor();
+    AActorMetadataOverlayTestActor* Actor = MakeTestActor();
     TSet<FString> Warnings;
-    const FString Output = FEditorActorTagDisplayTemplateFormatter::Format(
+    const FString Output = FActorMetadataOverlayTemplateFormatter::Format(
         *Actor, TEXT("{UnknownToken}|{Property:Missing}|{Property:TestString.Value}|literal {"), 120, Warnings);
     const FString Expected = TEXT("<unknown:UnknownToken>|<missing:Missing>|<unsupported:TestString.Value>|literal {");
     TestEqual(TEXT("Invalid template tokens produce the documented complete output"), Output, Expected);
     return true;
 }
 
-IMPLEMENT_SIMPLE_AUTOMATION_TEST(FEditorActorTagDisplayPropertyFormattingTest,
-                                 "EditorActorTagDisplay.PropertyFormatting",
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FActorMetadataOverlayPropertyFormattingTest,
+                                 "ActorMetadataOverlay.PropertyFormatting",
                                  EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
-bool FEditorActorTagDisplayPropertyFormattingTest::RunTest(const FString& Parameters)
+bool FActorMetadataOverlayPropertyFormattingTest::RunTest(const FString& Parameters)
 {
-    AEditorActorTagDisplayTestActor* Actor = MakeTestActor();
+    AActorMetadataOverlayTestActor* Actor = MakeTestActor();
     Actor->ObjectReference = nullptr;
     Actor->SoftObjectReference.Reset();
     Actor->TestString = TEXT("Line one\nLine two\twith tab");
@@ -251,7 +251,7 @@ bool FEditorActorTagDisplayPropertyFormattingTest::RunTest(const FString& Parame
 
     const auto FormatProperty = [&Actor, &Warnings](const TCHAR* PropertyName)
     {
-        return FEditorActorTagDisplayTemplateFormatter::Format(
+        return FActorMetadataOverlayTemplateFormatter::Format(
             *Actor, FString::Printf(TEXT("{Property:%s}"), PropertyName), 120, Warnings);
     };
 
@@ -273,21 +273,21 @@ bool FEditorActorTagDisplayPropertyFormattingTest::RunTest(const FString& Parame
     TestEqual(TEXT("Transient properties are rejected"), FormatProperty(TEXT("TransientString")), FString(TEXT("<unsupported:TransientString>")));
 
     const FString ShortOutput = FormatProperty(TEXT("TestString"));
-    const FString TruncatedOutput = FEditorActorTagDisplayTemplateFormatter::Format(*Actor, TEXT("{Property:TestString}"), 16, Warnings);
+    const FString TruncatedOutput = FActorMetadataOverlayTemplateFormatter::Format(*Actor, TEXT("{Property:TestString}"), 16, Warnings);
     TestTrue(TEXT("Max length output is at most 16 characters"), TruncatedOutput.Len() <= 16);
     TestTrue(TEXT("Max length output ends with an ellipsis"), TruncatedOutput.EndsWith(TEXT("...")));
     TestFalse(TEXT("The full normalized string is not confused with the shortened output"), ShortOutput == TruncatedOutput);
     return true;
 }
 
-IMPLEMENT_SIMPLE_AUTOMATION_TEST(FEditorActorTagDisplayDefaultConfigurationTest,
-                                 "EditorActorTagDisplay.DefaultConfiguration",
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FActorMetadataOverlayDefaultConfigurationTest,
+                                 "ActorMetadataOverlay.DefaultConfiguration",
                                  EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
-bool FEditorActorTagDisplayDefaultConfigurationTest::RunTest(const FString& Parameters)
+bool FActorMetadataOverlayDefaultConfigurationTest::RunTest(const FString& Parameters)
 {
-    const UEditorActorTagDisplayUserSettings* UserSettings = GetDefault<UEditorActorTagDisplayUserSettings>();
-    const UEditorActorTagDisplayProjectSettings* ProjectSettings = GetDefault<UEditorActorTagDisplayProjectSettings>();
+    const UActorMetadataOverlayUserSettings* UserSettings = GetDefault<UActorMetadataOverlayUserSettings>();
+    const UActorMetadataOverlayProjectSettings* ProjectSettings = GetDefault<UActorMetadataOverlayProjectSettings>();
     TestEqual(TEXT("Default display mode is Selected"), UserSettings->DisplayMode, EActorMetadataOverlayMode::Selected);
     TestEqual(TEXT("Default text scale is one"), UserSettings->TextScale, 1.0f);
     TestEqual(TEXT("Default distance is 10000"), UserSettings->GlobalMaxDrawDistance, 10000.0f);

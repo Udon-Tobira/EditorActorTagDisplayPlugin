@@ -6,7 +6,7 @@
 
 class AActor;
 
-class FEditorActorTagDisplayTemplateFormatter
+class FActorMetadataOverlayTemplateFormatter
 {
 public:
     static FString Format(const AActor& Actor,

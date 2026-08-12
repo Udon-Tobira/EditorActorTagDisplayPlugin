@@ -5,14 +5,14 @@
 #include "CoreMinimal.h"
 #include "Modules/ModuleManager.h"
 
-class FEditorActorTagDisplayController;
+class FActorMetadataOverlayController;
 
-class FEditorActorTagDisplayModule : public IModuleInterface
+class FActorMetadataOverlayModule : public IModuleInterface
 {
 public:
     virtual void StartupModule() override;
     virtual void ShutdownModule() override;
 
 private:
-    TUniquePtr<FEditorActorTagDisplayController> Controller;
+    TUniquePtr<FActorMetadataOverlayController> Controller;
 };

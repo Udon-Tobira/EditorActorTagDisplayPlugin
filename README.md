@@ -25,11 +25,11 @@ Actor Metadata Overlay is an Unreal Editor-only viewport tool for keeping useful
 
 ### Fab
 
-Download the ZIP for your Unreal Engine version from Fab and place the single `EditorActorTagDisplay` plugin folder in the project's `Plugins` directory. Enable the plugin from **Edit > Plugins**, then restart the editor when prompted.
+Download the ZIP for your Unreal Engine version from Fab and place the single `ActorMetadataOverlay` plugin folder in the project's `Plugins` directory. Enable the plugin from **Edit > Plugins**, then restart the editor when prompted.
 
 ### Project Plugins folder
 
-Copy the `EditorActorTagDisplay` plugin folder into `<YourProject>/Plugins/`. Open the project, enable **Actor Metadata Overlay**, and restart the editor.
+Copy the `ActorMetadataOverlay` plugin folder into `<YourProject>/Plugins/`. Open the project, enable **Actor Metadata Overlay**, and restart the editor.
 
 ## Public sample project
 
@@ -71,7 +71,7 @@ Per-user display mode, global distance, text scale, outline visibility, and boun
 
 The plugin does not scan every actor every frame. It rebuilds an event-driven cache when the level or rules change, refreshes individual actors on actor events, and traverses only matching cached actors during viewport drawing.
 
-Canonical documentation: <https://metyatech.github.io/unreal-plugin-docs/editor-actor-tag-display/>.
+Canonical documentation: <https://metyatech.github.io/unreal-plugin-docs/actor-metadata-overlay/>.
 
 ## Limitations
 
@@ -89,10 +89,10 @@ Canonical documentation: <https://metyatech.github.io/unreal-plugin-docs/editor-
 
 ## Support
 
-Open an issue at <https://github.com/metyatech/EditorActorTagDisplayPlugin/issues>.
+Open an issue at <https://github.com/metyatech/ActorMetadataOverlayPlugin/issues>.
 
 ## License
 
 Products obtained from Fab are subject to the Fab Standard License. This public repository does not grant a separate redistribution license for the Fab product.
 
-Central plugin documentation: <https://metyatech.github.io/unreal-plugin-docs/editor-actor-tag-display/>.
+Central plugin documentation: <https://metyatech.github.io/unreal-plugin-docs/actor-metadata-overlay/>.

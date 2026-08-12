@@ -1,8 +1,8 @@
 // Copyright (c) 2026 metyatech. All rights reserved.
 
-#include "EditorActorTagDisplayTemplateFormatter.h"
+#include "ActorMetadataOverlayTemplateFormatter.h"
 
-#include "EditorActorTagDisplayLog.h"
+#include "ActorMetadataOverlayLog.h"
 #include "GameFramework/Actor.h"
 #include "GameplayTagAssetInterface.h"
 #include "GameplayTagContainer.h"
@@ -263,7 +263,7 @@ namespace
         }
 
         InOutWarnedPropertyKeys.Add(WarningKey);
-        UE_LOG(LogEditorActorTagDisplay, Warning, TEXT("Property token '%s' on class '%s' is %s."),
+        UE_LOG(LogActorMetadataOverlay, Warning, TEXT("Property token '%s' on class '%s' is %s."),
                *PropertyName, *Actor.GetClass()->GetPathName(), Reason);
     }
 
@@ -295,7 +295,7 @@ namespace
     }
 }
 
-FString FEditorActorTagDisplayTemplateFormatter::Format(const AActor& Actor,
+FString FActorMetadataOverlayTemplateFormatter::Format(const AActor& Actor,
                                                         const FString& Template,
                                                         int32 MaxPropertyValueLength,
                                                         TSet<FString>& InOutWarnedPropertyKeys)
@@ -370,7 +370,7 @@ FString FEditorActorTagDisplayTemplateFormatter::Format(const AActor& Actor,
     return Output;
 }
 
-FString FEditorActorTagDisplayTemplateFormatter::FormatProperty(const AActor& Actor,
+FString FActorMetadataOverlayTemplateFormatter::FormatProperty(const AActor& Actor,
                                                                 const FString& PropertyName,
                                                                 int32 MaxPropertyValueLength,
                                                                 TSet<FString>& InOutWarnedPropertyKeys)

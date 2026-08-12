@@ -4,4 +4,4 @@
 
 #include "CoreMinimal.h"
 
-DECLARE_LOG_CATEGORY_EXTERN(LogEditorActorTagDisplay, Log, All);
+DECLARE_LOG_CATEGORY_EXTERN(LogActorMetadataOverlay, Log, All);

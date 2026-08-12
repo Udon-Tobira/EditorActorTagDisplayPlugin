@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "UObject/SoftObjectPtr.h"
-#include "EditorActorTagDisplayTypes.generated.h"
+#include "ActorMetadataOverlayTypes.generated.h"
 
 class AActor;
 
@@ -17,7 +17,7 @@ enum class EActorMetadataOverlayMode : uint8
 };
 
 USTRUCT()
-struct EDITORACTORTAGDISPLAY_API FActorMetadataOverlayRule
+struct ACTORMETADATAOVERLAY_API FActorMetadataOverlayRule
 {
     GENERATED_BODY()
 

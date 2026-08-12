@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 
-#include "EditorActorTagDisplayRuleMatcher.h"
+#include "ActorMetadataOverlayRuleMatcher.h"
 
 class AActor;
 class APlayerController;
@@ -15,7 +15,7 @@ class UWorld;
 struct FPropertyChangedEvent;
 class FTransactionObjectEvent;
 
-class FEditorActorTagDisplayController
+class FActorMetadataOverlayController
 {
 public:
     void Initialize();

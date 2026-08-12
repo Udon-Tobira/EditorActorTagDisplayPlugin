@@ -1,12 +1,12 @@
 // Copyright (c) 2026 metyatech. All rights reserved.
 
-#include "EditorActorTagDisplayController.h"
+#include "ActorMetadataOverlayController.h"
 
 #include "Debug/DebugDrawService.h"
 #include "Editor.h"
-#include "EditorActorTagDisplayLog.h"
-#include "EditorActorTagDisplaySettings.h"
-#include "EditorActorTagDisplayTemplateFormatter.h"
+#include "ActorMetadataOverlayLog.h"
+#include "ActorMetadataOverlaySettings.h"
+#include "ActorMetadataOverlayTemplateFormatter.h"
 #include "Engine/Canvas.h"
 #include "Engine/Engine.h"
 #include "Engine/World.h"
@@ -21,14 +21,14 @@
 #include "UObject/UObjectGlobals.h"
 #include "CanvasItem.h"
 
-#define LOCTEXT_NAMESPACE "EditorActorTagDisplay"
+#define LOCTEXT_NAMESPACE "ActorMetadataOverlay"
 
 namespace
 {
     constexpr float ScreenMargin = 16.0f;
 }
 
-void FEditorActorTagDisplayController::Initialize()
+void FActorMetadataOverlayController::Initialize()
 {
     if (bStarted)
     {
@@ -42,7 +42,7 @@ void FEditorActorTagDisplayController::Initialize()
     RebuildCache();
 }
 
-void FEditorActorTagDisplayController::Shutdown()
+void FActorMetadataOverlayController::Shutdown()
 {
     if (!bStarted)
     {
@@ -57,28 +57,28 @@ void FEditorActorTagDisplayController::Shutdown()
     bStarted = false;
 }
 
-void FEditorActorTagDisplayController::RegisterDelegates()
+void FActorMetadataOverlayController::RegisterDelegates()
 {
     if (GEngine != nullptr)
     {
-        LevelActorAddedHandle = GEngine->OnLevelActorAdded().AddRaw(this, &FEditorActorTagDisplayController::HandleLevelActorAdded);
-        LevelActorDeletedHandle = GEngine->OnLevelActorDeleted().AddRaw(this, &FEditorActorTagDisplayController::HandleLevelActorDeleted);
-        LevelActorListChangedHandle = GEngine->OnLevelActorListChanged().AddRaw(this, &FEditorActorTagDisplayController::HandleLevelActorListChanged);
-        ActorMovedHandle = GEngine->OnActorMoved().AddRaw(this, &FEditorActorTagDisplayController::HandleActorMoved);
-        LevelActorFolderChangedHandle = GEngine->OnLevelActorFolderChanged().AddRaw(this, &FEditorActorTagDisplayController::HandleLevelActorFolderChanged);
+        LevelActorAddedHandle = GEngine->OnLevelActorAdded().AddRaw(this, &FActorMetadataOverlayController::HandleLevelActorAdded);
+        LevelActorDeletedHandle = GEngine->OnLevelActorDeleted().AddRaw(this, &FActorMetadataOverlayController::HandleLevelActorDeleted);
+        LevelActorListChangedHandle = GEngine->OnLevelActorListChanged().AddRaw(this, &FActorMetadataOverlayController::HandleLevelActorListChanged);
+        ActorMovedHandle = GEngine->OnActorMoved().AddRaw(this, &FActorMetadataOverlayController::HandleActorMoved);
+        LevelActorFolderChangedHandle = GEngine->OnLevelActorFolderChanged().AddRaw(this, &FActorMetadataOverlayController::HandleLevelActorFolderChanged);
     }
 
-    MapOpenedHandle = FEditorDelegates::OnMapOpened.AddRaw(this, &FEditorActorTagDisplayController::HandleMapOpened);
-    ObjectPropertyChangedHandle = FCoreUObjectDelegates::OnObjectPropertyChanged.AddRaw(this, &FEditorActorTagDisplayController::HandleObjectPropertyChanged);
-    ObjectTransactedHandle = FCoreUObjectDelegates::OnObjectTransacted.AddRaw(this, &FEditorActorTagDisplayController::HandleObjectTransacted);
+    MapOpenedHandle = FEditorDelegates::OnMapOpened.AddRaw(this, &FActorMetadataOverlayController::HandleMapOpened);
+    ObjectPropertyChangedHandle = FCoreUObjectDelegates::OnObjectPropertyChanged.AddRaw(this, &FActorMetadataOverlayController::HandleObjectPropertyChanged);
+    ObjectTransactedHandle = FCoreUObjectDelegates::OnObjectTransacted.AddRaw(this, &FActorMetadataOverlayController::HandleObjectTransacted);
 
     if (GEditor != nullptr)
     {
-        BlueprintReinstancedHandle = GEditor->OnBlueprintReinstanced().AddRaw(this, &FEditorActorTagDisplayController::HandleBlueprintReinstanced);
+        BlueprintReinstancedHandle = GEditor->OnBlueprintReinstanced().AddRaw(this, &FActorMetadataOverlayController::HandleBlueprintReinstanced);
     }
 }
 
-void FEditorActorTagDisplayController::UnregisterDelegates()
+void FActorMetadataOverlayController::UnregisterDelegates()
 {
     if (GEngine != nullptr)
     {
@@ -132,14 +132,14 @@ void FEditorActorTagDisplayController::UnregisterDelegates()
     BlueprintReinstancedHandle.Reset();
 }
 
-void FEditorActorTagDisplayController::RegisterDebugDraw()
+void FActorMetadataOverlayController::RegisterDebugDraw()
 {
     DebugDrawHandle = UDebugDrawService::Register(
         TEXT("Editor"),
-        FDebugDrawDelegate::CreateRaw(this, &FEditorActorTagDisplayController::HandleDebugDraw));
+        FDebugDrawDelegate::CreateRaw(this, &FActorMetadataOverlayController::HandleDebugDraw));
 }
 
-void FEditorActorTagDisplayController::UnregisterDebugDraw()
+void FActorMetadataOverlayController::UnregisterDebugDraw()
 {
     if (DebugDrawHandle.IsValid())
     {
@@ -148,13 +148,13 @@ void FEditorActorTagDisplayController::UnregisterDebugDraw()
     }
 }
 
-void FEditorActorTagDisplayController::RegisterMenusStartup()
+void FActorMetadataOverlayController::RegisterMenusStartup()
 {
     ToolMenusStartupCallbackHandle = UToolMenus::RegisterStartupCallback(
-        FSimpleMulticastDelegate::FDelegate::CreateRaw(this, &FEditorActorTagDisplayController::RegisterMenus));
+        FSimpleMulticastDelegate::FDelegate::CreateRaw(this, &FActorMetadataOverlayController::RegisterMenus));
 }
 
-void FEditorActorTagDisplayController::UnregisterMenus()
+void FActorMetadataOverlayController::UnregisterMenus()
 {
     if (ToolMenusStartupCallbackHandle.IsValid())
     {
@@ -165,21 +165,21 @@ void FEditorActorTagDisplayController::UnregisterMenus()
     UToolMenus::UnregisterOwner(FToolMenuOwner(static_cast<void*>(this)));
 }
 
-void FEditorActorTagDisplayController::RebuildCache()
+void FActorMetadataOverlayController::RebuildCache()
 {
     ActorCache.Empty();
     ResolvedRules.Empty();
     WarnedRuleNames.Empty();
     WarnedPropertyKeys.Empty();
 
-    const UEditorActorTagDisplayProjectSettings* ProjectSettings = GetDefault<UEditorActorTagDisplayProjectSettings>();
+    const UActorMetadataOverlayProjectSettings* ProjectSettings = GetDefault<UActorMetadataOverlayProjectSettings>();
     if (ProjectSettings == nullptr)
     {
         RequestViewportRedraw();
         return;
     }
 
-    EditorActorTagDisplayRuleMatcher::ResolveRules(ProjectSettings->Rules, ResolvedRules, WarnedRuleNames);
+    ActorMetadataOverlayRuleMatcher::ResolveRules(ProjectSettings->Rules, ResolvedRules, WarnedRuleNames);
 
     UWorld* EditorWorld = GetEditorWorld();
     if (EditorWorld == nullptr || EditorWorld->WorldType != EWorldType::Editor)
@@ -196,7 +196,7 @@ void FEditorActorTagDisplayController::RebuildCache()
     RequestViewportRedraw();
 }
 
-void FEditorActorTagDisplayController::RefreshActor(AActor* Actor)
+void FActorMetadataOverlayController::RefreshActor(AActor* Actor)
 {
     if (Actor == nullptr)
     {
@@ -211,13 +211,13 @@ void FEditorActorTagDisplayController::RefreshActor(AActor* Actor)
         return;
     }
 
-    const int32 RuleIndex = EditorActorTagDisplayRuleMatcher::FindMatchingRule(*Actor, ResolvedRules);
+    const int32 RuleIndex = ActorMetadataOverlayRuleMatcher::FindMatchingRule(*Actor, ResolvedRules);
     if (!ResolvedRules.IsValidIndex(RuleIndex))
     {
         return;
     }
 
-    const UEditorActorTagDisplayProjectSettings* ProjectSettings = GetDefault<UEditorActorTagDisplayProjectSettings>();
+    const UActorMetadataOverlayProjectSettings* ProjectSettings = GetDefault<UActorMetadataOverlayProjectSettings>();
     if (ProjectSettings == nullptr)
     {
         return;
@@ -228,7 +228,7 @@ void FEditorActorTagDisplayController::RefreshActor(AActor* Actor)
     FCachedActorMetadataOverlay Cached;
     Cached.Actor = Actor;
     Cached.ResolvedRuleIndex = RuleIndex;
-    Cached.DisplayText = FEditorActorTagDisplayTemplateFormatter::Format(
+    Cached.DisplayText = FActorMetadataOverlayTemplateFormatter::Format(
         *Actor, Template, ProjectSettings->MaxPropertyValueLength, WarnedPropertyKeys);
     Cached.WorldBounds = Actor->GetComponentsBoundingBox(true);
     if (Cached.WorldBounds.IsValid)
@@ -243,7 +243,7 @@ void FEditorActorTagDisplayController::RefreshActor(AActor* Actor)
     ActorCache.Add(TWeakObjectPtr<AActor>(Actor), MoveTemp(Cached));
 }
 
-void FEditorActorTagDisplayController::RemoveActor(AActor* Actor)
+void FActorMetadataOverlayController::RemoveActor(AActor* Actor)
 {
     if (Actor != nullptr)
     {
@@ -252,7 +252,7 @@ void FEditorActorTagDisplayController::RemoveActor(AActor* Actor)
     }
 }
 
-bool FEditorActorTagDisplayController::IsCacheableActor(const AActor* Actor, const UWorld* EditorWorld) const
+bool FActorMetadataOverlayController::IsCacheableActor(const AActor* Actor, const UWorld* EditorWorld) const
 {
     if (Actor == nullptr || !IsValid(Actor) || EditorWorld == nullptr || Actor->GetWorld() != EditorWorld)
     {
@@ -267,7 +267,7 @@ bool FEditorActorTagDisplayController::IsCacheableActor(const AActor* Actor, con
     return EditorWorld->WorldType == EWorldType::Editor;
 }
 
-void FEditorActorTagDisplayController::RequestViewportRedraw() const
+void FActorMetadataOverlayController::RequestViewportRedraw() const
 {
     if (GEditor != nullptr)
     {
@@ -275,40 +275,40 @@ void FEditorActorTagDisplayController::RequestViewportRedraw() const
     }
 }
 
-void FEditorActorTagDisplayController::HandleLevelActorAdded(AActor* Actor)
+void FActorMetadataOverlayController::HandleLevelActorAdded(AActor* Actor)
 {
     RefreshActor(Actor);
     RequestViewportRedraw();
 }
 
-void FEditorActorTagDisplayController::HandleLevelActorDeleted(AActor* Actor)
+void FActorMetadataOverlayController::HandleLevelActorDeleted(AActor* Actor)
 {
     RemoveActor(Actor);
 }
 
-void FEditorActorTagDisplayController::HandleLevelActorListChanged()
+void FActorMetadataOverlayController::HandleLevelActorListChanged()
 {
     RebuildCache();
 }
 
-void FEditorActorTagDisplayController::HandleActorMoved(AActor* Actor)
+void FActorMetadataOverlayController::HandleActorMoved(AActor* Actor)
 {
     RefreshActor(Actor);
     RequestViewportRedraw();
 }
 
-void FEditorActorTagDisplayController::HandleLevelActorFolderChanged(const AActor* Actor, FName OldPath)
+void FActorMetadataOverlayController::HandleLevelActorFolderChanged(const AActor* Actor, FName OldPath)
 {
     RefreshActor(const_cast<AActor*>(Actor));
     RequestViewportRedraw();
 }
 
-void FEditorActorTagDisplayController::HandleMapOpened(const FString& Filename, bool bAsTemplate)
+void FActorMetadataOverlayController::HandleMapOpened(const FString& Filename, bool bAsTemplate)
 {
     RebuildCache();
 }
 
-void FEditorActorTagDisplayController::HandleObjectPropertyChanged(UObject* Object, FPropertyChangedEvent& PropertyChangedEvent)
+void FActorMetadataOverlayController::HandleObjectPropertyChanged(UObject* Object, FPropertyChangedEvent& PropertyChangedEvent)
 {
     if (bHandlingObjectEvent || Object == nullptr)
     {
@@ -316,12 +316,12 @@ void FEditorActorTagDisplayController::HandleObjectPropertyChanged(UObject* Obje
     }
 
     TGuardValue<bool> EventGuard(bHandlingObjectEvent, true);
-    if (Object->IsA<UEditorActorTagDisplayProjectSettings>())
+    if (Object->IsA<UActorMetadataOverlayProjectSettings>())
     {
         RebuildCache();
         return;
     }
-    if (Object->IsA<UEditorActorTagDisplayUserSettings>())
+    if (Object->IsA<UActorMetadataOverlayUserSettings>())
     {
         RequestViewportRedraw();
         return;
@@ -343,7 +343,7 @@ void FEditorActorTagDisplayController::HandleObjectPropertyChanged(UObject* Obje
     }
 }
 
-void FEditorActorTagDisplayController::HandleObjectTransacted(UObject* Object, const FTransactionObjectEvent& TransactionObjectEvent)
+void FActorMetadataOverlayController::HandleObjectTransacted(UObject* Object, const FTransactionObjectEvent& TransactionObjectEvent)
 {
     if (bHandlingObjectEvent || Object == nullptr)
     {
@@ -351,12 +351,12 @@ void FEditorActorTagDisplayController::HandleObjectTransacted(UObject* Object, c
     }
 
     TGuardValue<bool> EventGuard(bHandlingObjectEvent, true);
-    if (Object->IsA<UEditorActorTagDisplayProjectSettings>())
+    if (Object->IsA<UActorMetadataOverlayProjectSettings>())
     {
         RebuildCache();
         return;
     }
-    if (Object->IsA<UEditorActorTagDisplayUserSettings>())
+    if (Object->IsA<UActorMetadataOverlayUserSettings>())
     {
         RequestViewportRedraw();
         return;
@@ -377,12 +377,12 @@ void FEditorActorTagDisplayController::HandleObjectTransacted(UObject* Object, c
     }
 }
 
-void FEditorActorTagDisplayController::HandleBlueprintReinstanced()
+void FActorMetadataOverlayController::HandleBlueprintReinstanced()
 {
     RebuildCache();
 }
 
-void FEditorActorTagDisplayController::HandleDebugDraw(UCanvas* Canvas, APlayerController* PlayerController)
+void FActorMetadataOverlayController::HandleDebugDraw(UCanvas* Canvas, APlayerController* PlayerController)
 {
     if (Canvas == nullptr || Canvas->SceneView == nullptr || Canvas->SceneView->Family == nullptr || PlayerController != nullptr || GEditor == nullptr)
     {
@@ -396,8 +396,8 @@ void FEditorActorTagDisplayController::HandleDebugDraw(UCanvas* Canvas, APlayerC
         return;
     }
 
-    const UEditorActorTagDisplayUserSettings* UserSettings = GetDefault<UEditorActorTagDisplayUserSettings>();
-    const UEditorActorTagDisplayProjectSettings* ProjectSettings = GetDefault<UEditorActorTagDisplayProjectSettings>();
+    const UActorMetadataOverlayUserSettings* UserSettings = GetDefault<UActorMetadataOverlayUserSettings>();
+    const UActorMetadataOverlayProjectSettings* ProjectSettings = GetDefault<UActorMetadataOverlayProjectSettings>();
     if (EditorWorld == nullptr || UserSettings == nullptr || ProjectSettings == nullptr ||
         UserSettings->DisplayMode == EActorMetadataOverlayMode::Off)
     {
@@ -456,58 +456,58 @@ void FEditorActorTagDisplayController::HandleDebugDraw(UCanvas* Canvas, APlayerC
     }
 }
 
-void FEditorActorTagDisplayController::SetDisplayModeOff()
+void FActorMetadataOverlayController::SetDisplayModeOff()
 {
-    UEditorActorTagDisplayUserSettings::Get()->DisplayMode = EActorMetadataOverlayMode::Off;
-    UEditorActorTagDisplayUserSettings::Get()->SaveConfig();
+    UActorMetadataOverlayUserSettings::Get()->DisplayMode = EActorMetadataOverlayMode::Off;
+    UActorMetadataOverlayUserSettings::Get()->SaveConfig();
     RequestViewportRedraw();
 }
 
-void FEditorActorTagDisplayController::SetDisplayModeSelected()
+void FActorMetadataOverlayController::SetDisplayModeSelected()
 {
-    UEditorActorTagDisplayUserSettings::Get()->DisplayMode = EActorMetadataOverlayMode::Selected;
-    UEditorActorTagDisplayUserSettings::Get()->SaveConfig();
+    UActorMetadataOverlayUserSettings::Get()->DisplayMode = EActorMetadataOverlayMode::Selected;
+    UActorMetadataOverlayUserSettings::Get()->SaveConfig();
     RequestViewportRedraw();
 }
 
-void FEditorActorTagDisplayController::SetDisplayModeAll()
+void FActorMetadataOverlayController::SetDisplayModeAll()
 {
-    UEditorActorTagDisplayUserSettings::Get()->DisplayMode = EActorMetadataOverlayMode::All;
-    UEditorActorTagDisplayUserSettings::Get()->SaveConfig();
+    UActorMetadataOverlayUserSettings::Get()->DisplayMode = EActorMetadataOverlayMode::All;
+    UActorMetadataOverlayUserSettings::Get()->SaveConfig();
     RequestViewportRedraw();
 }
 
-bool FEditorActorTagDisplayController::CanExecuteMenuAction() const
+bool FActorMetadataOverlayController::CanExecuteMenuAction() const
 {
     return true;
 }
 
-bool FEditorActorTagDisplayController::IsDisplayModeOff() const
+bool FActorMetadataOverlayController::IsDisplayModeOff() const
 {
-    return UEditorActorTagDisplayUserSettings::Get()->DisplayMode == EActorMetadataOverlayMode::Off;
+    return UActorMetadataOverlayUserSettings::Get()->DisplayMode == EActorMetadataOverlayMode::Off;
 }
 
-bool FEditorActorTagDisplayController::IsDisplayModeSelected() const
+bool FActorMetadataOverlayController::IsDisplayModeSelected() const
 {
-    return UEditorActorTagDisplayUserSettings::Get()->DisplayMode == EActorMetadataOverlayMode::Selected;
+    return UActorMetadataOverlayUserSettings::Get()->DisplayMode == EActorMetadataOverlayMode::Selected;
 }
 
-bool FEditorActorTagDisplayController::IsDisplayModeAll() const
+bool FActorMetadataOverlayController::IsDisplayModeAll() const
 {
-    return UEditorActorTagDisplayUserSettings::Get()->DisplayMode == EActorMetadataOverlayMode::All;
+    return UActorMetadataOverlayUserSettings::Get()->DisplayMode == EActorMetadataOverlayMode::All;
 }
 
-void FEditorActorTagDisplayController::OpenProjectSettings()
+void FActorMetadataOverlayController::OpenProjectSettings()
 {
     FModuleManager::LoadModuleChecked<ISettingsModule>(TEXT("Settings")).ShowViewer(TEXT("Project"), TEXT("Plugins"), TEXT("ActorMetadataOverlay"));
 }
 
-void FEditorActorTagDisplayController::OpenEditorPreferences()
+void FActorMetadataOverlayController::OpenEditorPreferences()
 {
     FModuleManager::LoadModuleChecked<ISettingsModule>(TEXT("Settings")).ShowViewer(TEXT("Editor"), TEXT("Plugins"), TEXT("ActorMetadataOverlay"));
 }
 
-void FEditorActorTagDisplayController::RegisterMenus()
+void FActorMetadataOverlayController::RegisterMenus()
 {
     if (!bStarted || !UToolMenus::IsToolMenuUIEnabled())
     {
@@ -531,39 +531,39 @@ void FEditorActorTagDisplayController::RegisterMenus()
     FToolMenuSection& Section = Menu->FindOrAddSection(TEXT("ActorMetadataOverlay"), LOCTEXT("ActorMetadataOverlaySection", "Actor Metadata Overlay"));
     Section.AddMenuEntry(
         TEXT("ActorMetadataOverlay.Off"), LOCTEXT("ActorMetadataOverlayOff", "Off"), LOCTEXT("ActorMetadataOverlayOffTooltip", "Hide Actor Metadata Overlay text and bounds."),
-        FSlateIcon(), FUIAction(FExecuteAction::CreateRaw(this, &FEditorActorTagDisplayController::SetDisplayModeOff),
-                                FCanExecuteAction::CreateRaw(this, &FEditorActorTagDisplayController::CanExecuteMenuAction),
-                                FIsActionChecked::CreateRaw(this, &FEditorActorTagDisplayController::IsDisplayModeOff)),
+        FSlateIcon(), FUIAction(FExecuteAction::CreateRaw(this, &FActorMetadataOverlayController::SetDisplayModeOff),
+                                FCanExecuteAction::CreateRaw(this, &FActorMetadataOverlayController::CanExecuteMenuAction),
+                                FIsActionChecked::CreateRaw(this, &FActorMetadataOverlayController::IsDisplayModeOff)),
         EUserInterfaceActionType::RadioButton);
     Section.AddMenuEntry(
         TEXT("ActorMetadataOverlay.Selected"), LOCTEXT("ActorMetadataOverlaySelected", "Selected Actors"), LOCTEXT("ActorMetadataOverlaySelectedTooltip", "Show overlays for selected actors."),
-        FSlateIcon(), FUIAction(FExecuteAction::CreateRaw(this, &FEditorActorTagDisplayController::SetDisplayModeSelected),
-                                FCanExecuteAction::CreateRaw(this, &FEditorActorTagDisplayController::CanExecuteMenuAction),
-                                FIsActionChecked::CreateRaw(this, &FEditorActorTagDisplayController::IsDisplayModeSelected)),
+        FSlateIcon(), FUIAction(FExecuteAction::CreateRaw(this, &FActorMetadataOverlayController::SetDisplayModeSelected),
+                                FCanExecuteAction::CreateRaw(this, &FActorMetadataOverlayController::CanExecuteMenuAction),
+                                FIsActionChecked::CreateRaw(this, &FActorMetadataOverlayController::IsDisplayModeSelected)),
         EUserInterfaceActionType::RadioButton);
     Section.AddMenuEntry(
         TEXT("ActorMetadataOverlay.All"), LOCTEXT("ActorMetadataOverlayAll", "All Matching Actors"), LOCTEXT("ActorMetadataOverlayAllTooltip", "Show overlays for every actor matching a rule."),
-        FSlateIcon(), FUIAction(FExecuteAction::CreateRaw(this, &FEditorActorTagDisplayController::SetDisplayModeAll),
-                                FCanExecuteAction::CreateRaw(this, &FEditorActorTagDisplayController::CanExecuteMenuAction),
-                                FIsActionChecked::CreateRaw(this, &FEditorActorTagDisplayController::IsDisplayModeAll)),
+        FSlateIcon(), FUIAction(FExecuteAction::CreateRaw(this, &FActorMetadataOverlayController::SetDisplayModeAll),
+                                FCanExecuteAction::CreateRaw(this, &FActorMetadataOverlayController::CanExecuteMenuAction),
+                                FIsActionChecked::CreateRaw(this, &FActorMetadataOverlayController::IsDisplayModeAll)),
         EUserInterfaceActionType::RadioButton);
     Section.AddSeparator(TEXT("ActorMetadataOverlay.SettingsSeparator"));
     Section.AddMenuEntry(
         TEXT("ActorMetadataOverlay.ProjectSettings"), LOCTEXT("ActorMetadataOverlayProjectSettings", "Project Settings..."), LOCTEXT("ActorMetadataOverlayProjectSettingsTooltip", "Open Actor Metadata Overlay project settings."),
-        FSlateIcon(), FUIAction(FExecuteAction::CreateRaw(this, &FEditorActorTagDisplayController::OpenProjectSettings),
-                                FCanExecuteAction::CreateRaw(this, &FEditorActorTagDisplayController::CanExecuteMenuAction)));
+        FSlateIcon(), FUIAction(FExecuteAction::CreateRaw(this, &FActorMetadataOverlayController::OpenProjectSettings),
+                                FCanExecuteAction::CreateRaw(this, &FActorMetadataOverlayController::CanExecuteMenuAction)));
     Section.AddMenuEntry(
         TEXT("ActorMetadataOverlay.EditorPreferences"), LOCTEXT("ActorMetadataOverlayEditorPreferences", "Editor Preferences..."), LOCTEXT("ActorMetadataOverlayEditorPreferencesTooltip", "Open Actor Metadata Overlay editor preferences."),
-        FSlateIcon(), FUIAction(FExecuteAction::CreateRaw(this, &FEditorActorTagDisplayController::OpenEditorPreferences),
-                                FCanExecuteAction::CreateRaw(this, &FEditorActorTagDisplayController::CanExecuteMenuAction)));
+        FSlateIcon(), FUIAction(FExecuteAction::CreateRaw(this, &FActorMetadataOverlayController::OpenEditorPreferences),
+                                FCanExecuteAction::CreateRaw(this, &FActorMetadataOverlayController::CanExecuteMenuAction)));
 }
 
-UWorld* FEditorActorTagDisplayController::GetEditorWorld()
+UWorld* FActorMetadataOverlayController::GetEditorWorld()
 {
     return GEditor == nullptr ? nullptr : GEditor->GetEditorWorldContext().World();
 }
 
-void FEditorActorTagDisplayController::DrawBoundingBox(UCanvas* Canvas, const FBox& Bounds, const FLinearColor& Color)
+void FActorMetadataOverlayController::DrawBoundingBox(UCanvas* Canvas, const FBox& Bounds, const FLinearColor& Color)
 {
     if (Canvas == nullptr || Canvas->SceneView == nullptr || !Bounds.IsValid)
     {

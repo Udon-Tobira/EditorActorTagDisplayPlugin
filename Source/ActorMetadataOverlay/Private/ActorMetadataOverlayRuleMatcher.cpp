@@ -1,8 +1,8 @@
 // Copyright (c) 2026 metyatech. All rights reserved.
 
-#include "EditorActorTagDisplayRuleMatcher.h"
+#include "ActorMetadataOverlayRuleMatcher.h"
 
-#include "EditorActorTagDisplayLog.h"
+#include "ActorMetadataOverlayLog.h"
 #include "GameFramework/Actor.h"
 
 namespace
@@ -13,12 +13,12 @@ namespace
         {
             InOutWarnedRuleNames.Add(Rule.RuleName);
             const FString DisplayName = Rule.RuleName.IsNone() ? TEXT("<unnamed>") : Rule.RuleName.ToString();
-            UE_LOG(LogEditorActorTagDisplay, Warning, TEXT("Rule '%s' has an empty or unresolved Actor Class and will be ignored."), *DisplayName);
+            UE_LOG(LogActorMetadataOverlay, Warning, TEXT("Rule '%s' has an empty or unresolved Actor Class and will be ignored."), *DisplayName);
         }
     }
 }
 
-namespace EditorActorTagDisplayRuleMatcher
+namespace ActorMetadataOverlayRuleMatcher
 {
     void ResolveRules(const TArray<FActorMetadataOverlayRule>& Rules,
                       TArray<FResolvedActorMetadataOverlayRule>& OutResolvedRules,

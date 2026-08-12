@@ -2,9 +2,9 @@
 
 using UnrealBuildTool;
 
-public class EditorActorTagDisplay : ModuleRules
+public class ActorMetadataOverlay : ModuleRules
 {
-    public EditorActorTagDisplay(ReadOnlyTargetRules Target) : base(Target)
+    public ActorMetadataOverlay(ReadOnlyTargetRules Target) : base(Target)
     {
         PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
         IncludeOrderVersion = EngineIncludeOrderVersion.Latest;

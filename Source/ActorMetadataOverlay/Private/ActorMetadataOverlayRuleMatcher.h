@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "EditorActorTagDisplayTypes.h"
+#include "ActorMetadataOverlayTypes.h"
 
 class AActor;
 class UClass;
@@ -14,7 +14,7 @@ struct FResolvedActorMetadataOverlayRule
     UClass* ResolvedActorClass = nullptr;
 };
 
-namespace EditorActorTagDisplayRuleMatcher
+namespace ActorMetadataOverlayRuleMatcher
 {
     void ResolveRules(const TArray<FActorMetadataOverlayRule>& Rules,
                       TArray<FResolvedActorMetadataOverlayRule>& OutResolvedRules,

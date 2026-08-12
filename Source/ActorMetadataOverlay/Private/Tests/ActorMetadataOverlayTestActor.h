@@ -6,22 +6,22 @@
 #include "GameFramework/Actor.h"
 #include "GameplayTagAssetInterface.h"
 #include "GameplayTagContainer.h"
-#include "EditorActorTagDisplayTestActor.generated.h"
+#include "ActorMetadataOverlayTestActor.generated.h"
 
 UENUM()
-enum class EEditorActorTagDisplayTestEnum : uint8
+enum class EActorMetadataOverlayTestEnum : uint8
 {
     First,
     Second
 };
 
 UCLASS(Transient, NotPlaceable)
-class AEditorActorTagDisplayTestActor : public AActor, public IGameplayTagAssetInterface
+class AActorMetadataOverlayTestActor : public AActor, public IGameplayTagAssetInterface
 {
     GENERATED_BODY()
 
 public:
-    AEditorActorTagDisplayTestActor();
+    AActorMetadataOverlayTestActor();
 
     virtual void GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) const override;
 
@@ -50,7 +50,7 @@ public:
     FText TestText = FText::FromString(TEXT("Test Text"));
 
     UPROPERTY(EditAnywhere, Category = "Test")
-    EEditorActorTagDisplayTestEnum TestEnum = EEditorActorTagDisplayTestEnum::Second;
+    EActorMetadataOverlayTestEnum TestEnum = EActorMetadataOverlayTestEnum::Second;
 
     UPROPERTY(EditAnywhere, Category = "Test")
     TObjectPtr<UObject> ObjectReference;

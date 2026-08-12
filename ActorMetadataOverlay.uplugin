@@ -7,9 +7,8 @@
 	"Category": "Editor",
 	"CreatedBy": "metyatech",
 	"CreatedByURL": "https://github.com/metyatech",
-	"DocsURL": "https://metyatech.github.io/unreal-plugin-docs/editor-actor-tag-display/",
-	"MarketplaceURL": "",
-	"SupportURL": "https://github.com/metyatech/EditorActorTagDisplayPlugin/issues",
+	"DocsURL": "https://metyatech.github.io/unreal-plugin-docs/actor-metadata-overlay/",
+	"SupportURL": "https://github.com/metyatech/ActorMetadataOverlayPlugin/issues",
 	"EngineVersion": "5.8.0",
 	"CanContainContent": true,
 	"Installed": true,
@@ -18,7 +17,7 @@
 	],
 	"Modules": [
 		{
-			"Name": "EditorActorTagDisplay",
+			"Name": "ActorMetadataOverlay",
 			"Type": "Editor",
 			"LoadingPhase": "PostEngineInit",
 			"PlatformAllowList": [

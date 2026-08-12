@@ -45,7 +45,7 @@ Capture listing images in a normal Level Editor Viewport. Do not use Preview Edi
 
 ## Engine packages
 
-Build and register one ZIP for each supported engine: Unreal Engine 5.6, 5.7, and 5.8. Each ZIP must contain only the `EditorActorTagDisplay` plugin folder for that engine and Win64.
+Build and register one ZIP for each supported engine: Unreal Engine 5.6, 5.7, and 5.8. Each ZIP must contain only the `ActorMetadataOverlay` plugin folder for that engine and Win64.
 
 ## Listing ID and package registration
 
