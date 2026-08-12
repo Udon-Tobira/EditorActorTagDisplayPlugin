@@ -47,6 +47,10 @@ Capture listing images in a normal Level Editor Viewport. Do not use Preview Edi
 
 Build and register one ZIP for each supported engine: Unreal Engine 5.6, 5.7, and 5.8. Each ZIP must contain only the `EditorActorTagDisplay` plugin folder for that engine and Win64.
 
-## MarketplaceURL manual step
+## Listing ID and package registration
 
-After creating the Fab Draft Listing, copy the official product URL supplied by the Publisher Portal into `MarketplaceURL` in `EditorActorTagDisplay.uplugin`. Rebuild all three engine packages after this change. Do not use a placeholder URL or invent a Listing ID.
+After creating the Fab Draft Listing, obtain the official Listing ID from the Publisher Portal. Set that ID in `FabPluginRelease.json` and rerun the central release tool for all three supported engine versions. Do not guess, generate, or use a placeholder Listing ID.
+
+The central release tool writes `FabURL` into the packaged `.uplugin` as:
+`com.epicgames.launcher://ue/Fab/product/<listingId>`.
+The source and packaged `.uplugin` do not use `MarketplaceURL`. While `listingId` is `null`, both `MarketplaceURL` and `FabURL` are correctly absent.

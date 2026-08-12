@@ -30,8 +30,7 @@
     "Config",
     "Content",
     "Resources",
-    "Source/EditorActorTagDisplay/Public",
-    "Documentation"
+    "Source/EditorActorTagDisplay/Public"
   ],
   "includeFiles": [
     "EditorActorTagDisplay.uplugin",
@@ -45,6 +44,8 @@
     "Source/EditorActorTagDisplay/Private/EditorActorTagDisplaySettings.cpp",
     "Source/EditorActorTagDisplay/Private/EditorActorTagDisplayTemplateFormatter.cpp",
     "Source/EditorActorTagDisplay/Private/EditorActorTagDisplayTemplateFormatter.h",
+    "Documentation/QuickStart.md",
+    "Documentation/SettingsReference.md",
     "README.md",
     "CHANGELOG.md"
   ],
@@ -60,7 +61,8 @@
     "CHANGELOG.md"
   ],
   "customDistributionPaths": [
-    "Documentation",
+    "Documentation/QuickStart.md",
+    "Documentation/SettingsReference.md",
     "README.md",
     "CHANGELOG.md"
   ],
