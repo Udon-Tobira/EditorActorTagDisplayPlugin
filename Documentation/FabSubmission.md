@@ -7,6 +7,13 @@
 - Subcategory: `Engine Tools`
 - Suggested tags: Editor, Tool, Plugin, Actor, Metadata, Debugging, Level, Workflow
 
+## Fab disclosure metadata
+
+- Generated with AI: Yes
+- Allows usage with AI: Yes
+- Open Source: No
+- Third-Party Software: No
+
 ## Suggested pricing
 
 - Personal: `$9.99`
