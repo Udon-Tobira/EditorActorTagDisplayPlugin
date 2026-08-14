@@ -61,3 +61,28 @@ After creating the Fab Draft Listing, obtain the official Listing ID from the Pu
 The central release tool writes `FabURL` into the packaged `.uplugin` as:
 `com.epicgames.launcher://ue/Fab/product/<listingId>`.
 The source and packaged `.uplugin` do not use `MarketplaceURL`. While `listingId` is `null`, both `MarketplaceURL` and `FabURL` are correctly absent.
+
+## Fab Portal Technical Information (copy-ready)
+
+### Features
+
+- Display actor labels, classes, Actor Tags, Gameplay Tags, folders, data layers, and selected property values in the editor viewport.
+- Rule-based Selected Actors, All Matching Actors, and Off display modes.
+- Configurable templates, colors, distance limits, optional bounds, and event-driven refresh.
+
+### Code Modules
+
+- `ActorMetadataOverlay` (Editor): Editor-only viewport overlay, rule matching, settings, and template formatting module.
+
+### Technical Information
+
+- Number of Blueprints: 0.
+- Number of C++ Classes: 2 UCLASS declarations in the shipped distribution module.
+- Network Replicated: No. The editor-only tool does not provide network replication and does not modify replicated actor state.
+- Supported Development Platforms: Win64.
+- Supported Target Build Platforms: Win64.
+- Dependencies: None.
+- Prerequisites: Unreal Engine 5.6, 5.7, or 5.8; Windows 64-bit Unreal Editor.
+- Documentation: https://metyatech.github.io/unreal-plugin-docs/actor-metadata-overlay/
+- Example Project: https://github.com/metyatech/ActorMetadataOverlaySample. The public sample provides a UE 5.6 overview map and fixture plugin for demonstration and validation while keeping the paid plugin package separate.
+- Additional Notes: Editor-only tool for Win64. It displays metadata but does not add, remove, or edit Actor Tags, add Outliner columns, or provide a search interface.

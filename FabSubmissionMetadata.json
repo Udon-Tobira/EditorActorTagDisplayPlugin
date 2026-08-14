@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "product": "Actor Metadata Overlay",
+  "technicalInformation": {
+    "features": [
+      "Display actor labels, classes, Actor Tags, Gameplay Tags, folders, data layers, and selected property values in the editor viewport.",
+      "Rule-based Selected Actors, All Matching Actors, and Off display modes.",
+      "Configurable templates, colors, distance limits, optional bounds, and event-driven refresh."
+    ],
+    "codeModules": [{ "name": "ActorMetadataOverlay", "type": "Editor", "description": "Editor-only viewport overlay, rule matching, settings, and template formatting module." }],
+    "numberOfBlueprints": 0,
+    "numberOfCppClasses": 2,
+    "networkReplicated": false,
+    "networkReplicationNotes": "The editor-only tool does not provide network replication and does not modify replicated actor state.",
+    "supportedDevelopmentPlatforms": ["Win64"],
+    "supportedTargetBuildPlatforms": ["Win64"],
+    "dependencies": [],
+    "prerequisites": ["Unreal Engine 5.6, 5.7, or 5.8", "Windows 64-bit Unreal Editor"],
+    "documentationUrl": "https://metyatech.github.io/unreal-plugin-docs/actor-metadata-overlay/",
+    "exampleProjectUrl": "https://github.com/metyatech/ActorMetadataOverlaySample",
+    "exampleProjectNotes": "The public sample repository provides a UE 5.6 overview map and fixture plugin for demonstration and validation while keeping the paid plugin package separate.",
+    "additionalNotes": "Editor-only tool for Win64. It displays metadata but does not add, remove, or edit Actor Tags, add Outliner columns, or provide a search interface."
+  }
+}
