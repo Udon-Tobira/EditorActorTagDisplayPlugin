@@ -56,7 +56,7 @@ Build and register one ZIP for each supported engine: Unreal Engine 5.6, 5.7, an
 
 ## Listing ID and package registration
 
-After creating the Fab Draft Listing, obtain the official Listing ID from the Publisher Portal. Set that ID in `FabPluginRelease.json` and rerun the central release tool for all three supported engine versions. Do not guess, generate, or use a placeholder Listing ID.
+Do not use the Fab Portal Draft Listing UID as the FabURL product or listing ID. Set `listingId` in `FabPluginRelease.json` only when the ID has been explicitly confirmed as the FabURL Product/Listing ID. If that ID cannot be confirmed, leave `listingId` as `null`; in that state, the absence of `FabURL` and `MarketplaceURL` is correct. Do not guess an ID, reuse a Draft UID, or use a placeholder.
 
 The central release tool writes `FabURL` into the packaged `.uplugin` as:
 `com.epicgames.launcher://ue/Fab/product/<listingId>`.
